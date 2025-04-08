@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
-import AccessDenied from './presentasjon/pages/accessDenied/AccessDenied';
+import AccessDenied from './presentation/pages/accessDenied/AccessDenied';
+import { LoginForm } from './presentation/pages/loginPage/LoginPage';
 
 // Import your components
 // import LoginPage from './components/LoginPage';
@@ -20,9 +21,9 @@ const App: React.FC = () => {
       <Router>
         <Routes>
           {/* Public routes */}
-          <Route path="/" element={<AccessDenied />} />
-          {/* <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          {/* <Route path="/" element={<AccessDenied />} /> */}
+          <Route path="/login" element={<LoginForm />} />
+          {/* <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-2fa" element={<VerifyTwoFactorPage />} /> */}
           
           {/* Protected routes using Outlet */}
