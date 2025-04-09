@@ -1,11 +1,10 @@
-// src/components/ProtectedRoute.tsx
-
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store/store';
 import { tokenService } from '../../infrastructure/services/tokenService';
 import AccessDenied from '../pages/accessDenied/AccessDenied';
+import LoginForm from '../pages/loginPage/LoginPage';
 
 interface Props {}
 
@@ -19,7 +18,7 @@ export const ProtectedRoute: React.FC<Props> = () => {
 
   // If not logged in, show access denied page
   if (!isLoggedIn) {
-    return <AccessDenied />;
+    return <LoginForm />;
   }
 
   // If logged in, render the child routes

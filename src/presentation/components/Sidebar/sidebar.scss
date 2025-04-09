@@ -1,0 +1,132 @@
+@import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,300,600);
+
+.app {
+  height: 90vh;
+
+  .sidebar {
+    position           : fixed;
+    width              : 200px;
+    height             : 100vh;
+    top                : 0;
+    overflow           : hidden;
+    background-color   : #19222a;
+    transform          : translateZ(0);
+    visibility         : visible;
+    backface-visibility: hidden;
+    z-index            : 1;
+
+    header {
+      background-color: #09f;
+      width           : 100%;
+      display         : flex;
+      padding         : 12px 16px;
+    }
+  }
+
+  .sidebar-nav {
+    width                     : 208px;
+    background-color          : #19222a;
+    height                    : 100%;
+    font-weight               : 400;
+    font-size                 : 15.36px;
+    overflow                  : auto;
+    padding-bottom            : 6em;
+    z-index                   : 9;
+    overflow                  : hidden;
+    -webkit-overflow-scrolling: touch;
+
+    ul {
+      list-style     : none;
+      display        : flex;
+      padding        : 0;
+      margin         : 0;
+      flex-direction : row;
+      flex-wrap      : wrap;
+      justify-content: flex-start;
+      align-content  : flex-start;
+
+      li {
+        margin-left    : 0;
+        padding-left   : 0;
+        display        : flex;
+        width          : 100%;
+        flex-direction : column;
+        flex-wrap      : nowrap;
+        align-items    : flex-start;
+        align-content  : stretch;
+        justify-content: space-around;
+
+        a {
+          color          : rgba(255, 255, 255, 0.9);
+          font-size      : 12px;
+          padding        : 8px;
+          position       : relative;
+          display        : flex;
+          flex-direction : row;
+          flex-wrap      : nowrap;
+          justify-content: flex-start;
+          align-items    : center;
+          width          : 100%;
+
+          &:hover {
+            background-color: rgba(0, 0, 0, 0.9);
+            transition      : all 0.6s ease;
+          }
+        }
+
+        i {
+          font-size     : 28.8px;
+          padding-right : 8px;
+          width         : 40px;
+          display       : inline;
+          vertical-align: middle;
+        }
+
+        span {
+          padding-left: 8px;
+        }
+      }
+    }
+
+    &>ul>li>a:after {
+      content    : '\2B98';
+      font-family: ionicons;
+      font-size  : 14px;
+      width      : 10px;
+      color      : #fff;
+      position   : absolute;
+      right      : 36px;
+      top        : 30%;
+    }
+
+    & .nav-flyout {
+      position        : absolute;
+      background-color: #080D11;
+      z-index         : 2;
+      left            : 40px;
+      top             : 0;
+      transform       : translateX(100%);
+      transition      : all 0.5s ease;
+
+      a:hover {
+        background-color: rgba(255, 255, 255, 0.05);
+      }
+    }
+
+    & ul>li:hover {
+      .nav-flyout {
+        transform : translateX(0);
+        transition: all 0.5s ease;
+      }
+    }
+  }
+
+  a {
+    text-decoration: none;
+    transition     : all 0.6s ease;
+
+    &:hover {
+      transition: all 0.6s ease;
+    }
+  }
+}

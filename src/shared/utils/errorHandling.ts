@@ -4,3 +4,10 @@ export class ButtonError extends Error {
         this.name = 'ButtonError';
     }
 }
+
+export class FormikError extends Error {
+    constructor(message: string) {
+        super(message);
+        this.name = 'FormikError';
+    }
+}

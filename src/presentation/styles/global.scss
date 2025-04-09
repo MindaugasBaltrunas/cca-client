@@ -1,0 +1,349 @@
+$base-bgColor    : #354152;
+$base_color      : #aaa;
+$base-text       : #6b6d62;
+$text            : #fff;
+$border          : #ccc;
+$base-font-weight: 300;
+$base-font-size  : 16px;
+$base-line-height: 32px;
+$grid-max-width  : 400px;
+$base-font-family: 'Helvetica Neue',
+sans-serif;
+$grid-width          : 100%;
+$add_button_color    : #3498db;
+$save_button_color   : #459747;
+$remove_button_color : #d9534f;
+$edit_button_color   : #ddd;
+$border-radius       : 5px;
+$buttonTransition    : background-color 0.3s ease;
+$two-columns         : calc(#{$grid-width} / 2);
+$three-columns       : calc(#{$grid-width} / 3);
+$four-columns        : calc(#{$grid-width} / 4);
+$five-columns        : calc(#{$grid-width} / 5);
+$six-columns         : calc(#{$grid-width} / 6);
+$seven-columns       : calc(#{$grid-width} / 7);
+$eight-columns       : calc(#{$grid-width} / 8);
+$nine-columns        : calc(#{$grid-width} / 9);
+$ten-columns         : calc(#{$grid-width} / 10);
+$eleven-columns      : calc(#{$grid-width} / 11);
+$twelve-columns      : calc(#{$grid-width} / 12);
+$thirteen-columns    : calc(#{$grid-width} / 13);
+$fourteen-columns    : calc(#{$grid-width} / 14);
+
+html,
+body {
+  width     : 100%;
+  height    : 100%;
+  margin    : 0;
+  padding   : 0;
+  overflow-x: hidden;
+}
+
+.addButton {
+  display: flex;
+  margin : 10px;
+
+  button {
+    background-color: $add_button_color;
+    color           : $text;
+    font-size       : 16px;
+    font-weight     : bold;
+    text-align      : center;
+    text-decoration : none;
+    cursor          : pointer;
+    border-radius   : 5px;
+    border          : none;
+    transition      : $buttonTransition;
+    width           : 30px;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+}
+
+.saveButton {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.saveButton button {
+  background   : linear-gradient(45deg, #6DD5FA, #FF758C);
+  color        : white;
+  border       : none;
+  padding      : 10px 20px;
+  border-radius: 5px;
+  cursor       : pointer;
+  font-size    : 1em;
+  transition   : all 0.3s ease;
+  outline      : none;
+  transform    : scale(1);
+  box-shadow   : 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.saveButton button:hover {
+  background: linear-gradient(45deg, #FF758C, #6DD5FA);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  transform : scale(1.05);
+}
+
+.saveButton button:disabled {
+  background: #ccc;
+  cursor    : not-allowed;
+}
+
+
+
+.cancelButton {
+  display: flex;
+  margin : 10px;
+
+  button {
+    padding        : 10px;
+    font-size      : 16px;
+    font-weight    : bold;
+    text-align     : center;
+    text-decoration: none;
+    cursor         : pointer;
+    border-radius  : 5px;
+    border         : none;
+    transition     : $buttonTransition;
+
+    &:hover {
+      background-color: rgba(245, 201, 193, 0.8);
+    }
+  }
+}
+
+.removeButton {
+  margin: 10px;
+
+  button {
+    background-color: $remove_button_color;
+    color           : $text;
+    font-size       : 16px;
+    font-weight     : bold;
+    text-align      : center;
+    text-decoration : none;
+    cursor          : pointer;
+    border-radius   : 5px;
+    border          : none;
+    transition      : $buttonTransition;
+    width           : 30px;
+
+    &:hover {
+      background-color: rgba(141, 51, 15, 0.8);
+    }
+  }
+}
+
+.buttonEdit {
+  justify-content: center;
+
+  button {
+    margin          : 0 10px;
+    border          : none;
+    background      : none;
+    cursor          : pointer;
+    transition      : background-color 0.3s ease;
+    background-color: text;
+
+    img {
+      width : 30px;
+      height: 30px;
+      margin: 0 0 0 10px;
+    }
+
+    img:hover {
+      border-radius   : 5px;
+      background-color: $edit_button_color;
+    }
+  }
+}
+
+.closeModalButton {
+  position : absolute;
+  top      : 5%;
+  left     : 95%;
+  transform: translate(-50%, -50%);
+
+  button {
+    cursor          : pointer;
+    background-color: white;
+    border          : none;
+    width           : 30px;
+  }
+
+  button:hover {
+    background-color: white;
+    font-size       : $base-font-size;
+  }
+}
+
+.buttonAdd {
+  display: flex;
+  margin : 0 10px 0 0;
+
+  button {
+    background-color: $add_button_color;
+    ;
+    color          : $text;
+    font-size      : $base-font-size;
+    font-weight    : bold;
+    text-align     : center;
+    text-decoration: none;
+    cursor         : pointer;
+    border-radius  : $border-radius;
+    border         : none;
+    transition     : $buttonTransition;
+    width          : 30px;
+  }
+
+  button:hover {
+    background-color: #2980b9;
+  }
+}
+
+.buttonRemove {
+  margin-top: 20px;
+
+  button {
+    background-color: $remove_button_color;
+    color           : $text;
+    font-size       : $base-font-size;
+    font-weight     : bold;
+    text-align      : center;
+    text-decoration : none;
+    cursor          : pointer;
+    border-radius   : $border-radius;
+    border          : none;
+    transition      : $buttonTransition;
+    width           : 30px;
+
+    &:hover {
+      background-color: rgba(141, 51, 15, 0.8);
+    }
+  }
+}
+
+.buttonPublic {
+  text-align: center;
+  margin-top: 20px;
+
+  button {
+    background-image: linear-gradient(to right, #6dd5ed, #2193b0);
+    border          : none;
+    border-radius   : 5px;
+    color           : white;
+    cursor          : pointer;
+    font-size       : 16px;
+    font-weight     : bold;
+    padding         : 10px 20px;
+    text-transform  : uppercase;
+    transition      : transform 0.3s ease, box-shadow 0.3s ease;
+    position        : relative;
+    overflow        : hidden;
+  }
+
+  button::before {
+    content         : '';
+    position        : absolute;
+    top             : 50%;
+    left            : 50%;
+    width           : 300%;
+    height          : 300%;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+    transform       : translate(-50%, -50%) scale(0);
+    transition      : transform 0.3s ease;
+  }
+
+  button:hover::before {
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  button:hover {
+    transform : scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  button:disabled {
+    background-image: linear-gradient(to right, #cccccc, #999999);
+    cursor          : default;
+  }
+}
+
+.removeDefaultButton {
+  button {
+    background: none;
+    border    : none;
+    padding   : 0;
+    margin    : 0;
+    font      : inherit;
+    cursor    : pointer;
+    outline   : inherit;
+  }
+}
+
+.titleField {
+  line-height  : $base-line-height;
+  border-radius: 10px;
+  text-align   : center;
+  margin       : 10px 0 0 0;
+  transition   : transform 1s ease 0s;
+  border-radius: 10px;
+  box-shadow   :
+    rgba(0, 0, 0, 0.024) 0px 0px 0px 1px,
+    rgba(0, 0, 0, 0.05) 0px 1px 0px 0px,
+    rgba(0, 0, 0, 0.03) 0px 0px 8px 0px,
+    rgba(0, 0, 0, 0.1) 0px 20px 30px 0px;
+}
+
+.inputField {
+  line-height  : $base-line-height;
+  border-radius: 10px;
+  text-align   : center;
+  width        : $grid-width;
+}
+
+.invalid {
+  display: none;
+}
+
+.checkbox {
+  display    : flex;
+  align-items: center;
+  margin     : 5px;
+  animation  : fadeIn 0.5s ease-in-out;
+  font-family: 'Arial', sans-serif;
+
+  input[type="checkbox"] {
+    margin-right: 10px;
+    cursor      : pointer;
+    accent-color: #007bff;
+    width       : 20px;
+    height      : 20px;
+  }
+
+  label {
+    cursor    : pointer;
+    transition: color 0.3s ease;
+    font-size : 16px;
+    color     : #333;
+  }
+
+  label:hover {
+    color: #0056b3;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity  : 0;
+    transform: translateY(-10px);
+  }
+
+  to {
+    opacity  : 1;
+    transform: translateY(0);
+  }
+}

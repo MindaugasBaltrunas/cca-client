@@ -1,0 +1,36 @@
+<?xml version="1.0" ?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"
+	id="Layer_1" viewBox="0 0 34 32" style="enable-background:new 0 0 32 32;" xml:space="preserve">
+	<style type="text/css">
+		.st0 {
+			fill: none;
+			stroke: #fcfbfb;
+			stroke-linecap: round;
+			stroke-linejoin: round;
+			stroke-miterlimit: 10;
+		}
+	</style>
+	<g>
+		<g>
+			<path class="st0" d="M6.3,31H1.8v-6.1c0-0.6,0.4-1,1-1h2.5c0.6,0,1,0.4,1,1V31z" />
+			<path class="st0" d="M14.3,31H9.8v-8.9c0-0.6,0.4-1,1-1h2.5c0.6,0,1,0.4,1,1V31z" />
+			<path class="st0" d="M22.2,31h-4.5V19.9c0-0.6,0.4-1,1-1h2.5c0.6,0,1,0.4,1,1V31z" />
+			<path class="st0" d="M30.2,31h-4.5V17c0-0.6,0.4-1,1-1h2.5c0.6,0,1,0.4,1,1V31z" />
+		</g>
+		<g>
+			<polyline class="st0" points="29.3,13.1 29.3,8.5 24.7,8.5   " />
+			<path class="st0" d="M2.7,20.4c0,0,14.4-0.2,26.7-11.9" />
+		</g>
+		<g>
+			<g>
+				<g>
+					<path class="st0" d="M17.6,4.8h-1.3h-0.8c-0.6,0-1.1,0.5-1.1,1.1l0,0c0,0.6,0.5,1.1,1.1,1.1h1" />
+					<path class="st0" d="M16.5,7c0.6,0,1.1,0.5,1.1,1.1l0,0c0,0.6-0.5,1.1-1.1,1.1h-2.1" />
+				</g>
+				<line class="st0" x1="16.3" y1="3.6" x2="16.3" y2="4.8" />
+				<line class="st0" x1="16.3" y1="9.2" x2="16.3" y2="10.4" />
+			</g>
+			<circle class="st0" cx="16" cy="7" r="6" />
+		</g>
+	</g>
+</svg>

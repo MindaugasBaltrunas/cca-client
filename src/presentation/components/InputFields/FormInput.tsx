@@ -19,7 +19,6 @@ const FormInput: React.FC<FormInputProps> = ({
   const formik = useFormikContext<any>();
   const fieldProps = formik.getFieldProps(name);
   
-  // Helper function to safely get error message
   const getErrorMessage = (): string => {
     const error = formik.errors[name];
     return typeof error === 'string' ? error : '';
@@ -35,7 +34,7 @@ const FormInput: React.FC<FormInputProps> = ({
         {...fieldProps}
       />
       {formik.touched[name] && formik.errors[name] ? (
-        <div className="error">{getErrorMessage()}</div>
+        <div className="danger">{getErrorMessage()}</div>
       ) : null}
     </div>
   );

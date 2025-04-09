@@ -1,0 +1,102 @@
+@use '../../styles/global.scss' as *;
+
+// Variables
+$base-bgColor: #354152;
+$base-color: #7e8ba3;
+$base-text: #6b6d62;
+$text: #fff;
+$base-line-height: 2rem;
+$grid-max-width: 25rem;
+$grid-width: 100%;
+
+.container {
+  height: 100vh;
+  width: $grid-width;
+  background-color: $base-bgColor;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  .auth {
+    max-width: $grid-max-width;
+    width: $grid-width;
+    border-radius: 5px;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    color: $base-color;
+    box-shadow: 0 0 250px #000;
+    text-align: center;
+    padding: 2rem;
+    
+    h1 {
+      font-size: 2.75rem;
+      font-weight: 100;
+      margin: 0 0 1rem;
+      text-transform: uppercase;
+      color: $text;
+    }
+    
+    form {
+      width: $grid-width;
+      margin: 10px 0;
+      
+      input {
+        color: $text;
+        line-height: $base-line-height;
+        border-radius: 999px;
+        background-color: transparent;
+        border: 1px solid #242c37;
+        text-align: center;
+        width: $grid-width;
+        padding: 8px 0;
+        margin: 10px 0;
+        
+        &:-webkit-autofill {
+          transition: background-color 5000s;
+          -webkit-text-fill-color: $text;
+        }
+      }
+      
+      button {
+        background-image: linear-gradient(160deg, #1c2430 0%, $base-bgColor 100%);
+        color: $base-color;
+        width: $grid-width;
+        border-radius: 999px;
+        line-height: $base-line-height;
+        margin: 15px 0;
+        border: 1px solid #242c37;
+        cursor: pointer;
+        padding: 0 10px;
+        
+        &:hover {
+          background-image: linear-gradient(160deg, $base-bgColor 0%, #1c2430 100%);
+          color: $text;
+        }
+      }
+    }
+    
+    .links {
+      margin: 15px 0;
+      color: $base-color;
+      
+      a {
+        margin-left: 10px;
+        color: $base-color;
+        text-decoration: none;
+        
+        &:hover {
+          color: $text;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+    
+    .auth {
+      width: 100%;
+    }
+  }
+}
