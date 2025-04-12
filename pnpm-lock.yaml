@@ -17,6 +17,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.72.0
         version: 5.72.1(react@19.1.0)
+      '@tanstack/react-query-devtools':
+        specifier: ^5.72.1
+        version: 5.72.1(@tanstack/react-query@5.72.1(react@19.1.0))(react@19.1.0)
       '@testing-library/dom':
         specifier: ^10.4.0
         version: 10.4.0
@@ -1288,6 +1291,15 @@ packages:
 
   '@tanstack/query-core@5.72.1':
     resolution: {integrity: sha512-nOu0EEkZuJ0BZnYgeaEfo44+psq1jBO7/zp3KudixD4dvgOVerrhAhDEKsWx2N7MxB59mjO4r0ddP/VqWGPK+Q==, tarball: https://registry.npmjs.org/@tanstack/query-core/-/query-core-5.72.1.tgz}
+
+  '@tanstack/query-devtools@5.72.1':
+    resolution: {integrity: sha512-D0vEoQaiVq9ayCqvvxA9XkDq7TIesyPpvgP69arRtt5FQF6n/Hrta4SlkfXC4m9BCvFLlhLDcKGYa2eMQ4ZIIA==, tarball: https://registry.npmjs.org/@tanstack/query-devtools/-/query-devtools-5.72.1.tgz}
+
+  '@tanstack/react-query-devtools@5.72.1':
+    resolution: {integrity: sha512-ckNRgABst3MLjpM2nD/CzQToCiaT3jb3Xhtf+GP/0/9ij9SPT/SC+lc3wUDSkT0OupnHobBBF5E1/Xp6B+XZLg==, tarball: https://registry.npmjs.org/@tanstack/react-query-devtools/-/react-query-devtools-5.72.1.tgz}
+    peerDependencies:
+      '@tanstack/react-query': ^5.72.1
+      react: ^18 || ^19
 
   '@tanstack/react-query@5.72.1':
     resolution: {integrity: sha512-4UEMyRx54xj144D2nDvDIMiXSG5BrqyCJrmyNoGbymNS+VWODcBDFrmRk9p2fe12UGZ4JtKPTNuW2Jg0aisUgQ==, tarball: https://registry.npmjs.org/@tanstack/react-query/-/react-query-5.72.1.tgz}
@@ -7326,6 +7338,14 @@ snapshots:
       - supports-color
 
   '@tanstack/query-core@5.72.1': {}
+
+  '@tanstack/query-devtools@5.72.1': {}
+
+  '@tanstack/react-query-devtools@5.72.1(@tanstack/react-query@5.72.1(react@19.1.0))(react@19.1.0)':
+    dependencies:
+      '@tanstack/query-devtools': 5.72.1
+      '@tanstack/react-query': 5.72.1(react@19.1.0)
+      react: 19.1.0
 
   '@tanstack/react-query@5.72.1(react@19.1.0)':
     dependencies:

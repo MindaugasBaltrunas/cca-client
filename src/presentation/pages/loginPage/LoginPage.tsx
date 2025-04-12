@@ -4,6 +4,7 @@ import * as Yup from 'yup';
 import FormInput from '../../components/InputFields/FormInput';
 import { NavLink } from 'react-router-dom'; // Corrected from 'react-router'
 import style from './login.module.scss';
+import TwoFactorAuthSetup from '../../components/Auth/TwoFactorAuthSetup'; // Adjust the import path as necessary
 
 interface LoginValues {
   email: string;
@@ -27,6 +28,7 @@ export const LoginForm: React.FC = () => {
 
   return (
     <div className={style.container}>
+       <TwoFactorAuthSetup />
       <div className={style.auth}>
         <h1>Login</h1>
         <Formik
