@@ -37,6 +37,7 @@ const Routing = (): JSX.Element => {
           path="/2fa-setup"
           element={
             <Layout>
+           
               <TwoFactorAuthSetup />
             </Layout>
           }

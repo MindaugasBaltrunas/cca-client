@@ -1,7 +1,6 @@
 import { apiClient, API_CONFIG } from '../../shared/config/apiConfig';
 import { SignInCredentials, SignUpData, UserResponseData } from '../../shared/types/api.types';
 
-// Aprašome atsakymų tipus
 interface TokenResponse {
   token: string;
   refreshToken: string;
@@ -32,7 +31,7 @@ export const authApi = {
    * Vartotojo prisijungimas
    */
   login: async (credentials: SignInCredentials): Promise<LoginResponse> => {
-    const response = await apiClient.post('/api', credentials, {
+    const response = await apiClient.post('/', credentials, {
       headers: {
         'X-API-Endpoint': API_CONFIG.ENDPOINTS.AUTH.SIGN_IN
       }

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../../context/AuthContext'; // Patikslinkite kelią pagal jūsų projekto struktūrą
 
 const TwoFactorDisableForm: React.FC = () => {
-  const { disableTwoFactorAuth, error, isLoading, user } = useAuth();
+  const {  error, isLoading, user } = useAuth();
   const [verificationCode, setVerificationCode] = useState('');
   const [disableComplete, setDisableComplete] = useState(false);
 
@@ -20,7 +20,6 @@ const TwoFactorDisableForm: React.FC = () => {
     e.preventDefault();
     
     try {
-      await disableTwoFactorAuth(verificationCode);
       setDisableComplete(true);
     } catch (err) {
       // Error is handled in useAuth hook

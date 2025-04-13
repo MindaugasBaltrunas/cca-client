@@ -5,17 +5,12 @@ import { tokenStorage } from '../../infrastructure/services/tokenStorage';
 import { SignInCredentials, SignUpData, LoginState } from '../../shared/types/api.types';
 import { queryKeys } from '../../utils/queryKeys';
 
-/**
- * Custom hook for authentication functionality with React Query.
- */
 export const useAuthentication = () => {
   const queryClient = useQueryClient();
   const [twoFactorLoginState, setTwoFactorLoginState] = useState<LoginState | null>(null);
 
-  // Determine if the user is authenticated (token exists and not expired)
   const isAuthenticated = !!tokenStorage.getToken() && !tokenStorage.isTokenExpired();
 
-  // Helper: Save tokens and trigger user refetch.
   const updateAuthState = useCallback(
     (data: { token: string; refreshToken: string; expiresAt: number }) => {
       try {
@@ -32,7 +27,6 @@ export const useAuthentication = () => {
     [queryClient]
   );
 
-  // Helper: Handle 2FA requirement from the login response.
   const handleTwoFactorRequired = useCallback(
     (data: { userId?: string; twoFactorRequired?: boolean }, credentials?: SignInCredentials) => {
       if (data?.twoFactorRequired && data?.userId) {
@@ -73,169 +67,169 @@ export const useAuthentication = () => {
     },
   });
 
-  // Admin login mutation
-  const adminLoginMutation = useMutation({
-    mutationFn: (params: { credentials: SignInCredentials; adminPassword: string }) =>
-      authApi.adminLogin({ ...params.credentials, adminPassword: params.adminPassword }),
-    onSuccess: updateAuthState,
-  });
+//   // Admin login mutation
+//   const adminLoginMutation = useMutation({
+//     mutationFn: (params: { credentials: SignInCredentials; adminPassword: string }) =>
+//       authApi.adminLogin({ ...params.credentials, adminPassword: params.adminPassword }),
+//     onSuccess: updateAuthState,
+//   });
 
-  // Registration mutation
+//   // Registration mutation
   const registerMutation = useMutation({
     mutationFn: authApi.register,
   });
 
-  // Logout mutation
-  const logoutMutation = useMutation({
-    mutationFn: authApi.logout,
-    onSettled: () => {
-      try {
-        tokenStorage.clearToken();
-        queryClient.resetQueries({ queryKey: queryKeys.auth.user });
-        setTwoFactorLoginState(null);
-      } catch (error) {
-        console.error('Error in logout handler:', error);
-      }
-    },
-  });
+//   // Logout mutation
+//   const logoutMutation = useMutation({
+//     mutationFn: authApi.logout,
+//     onSettled: () => {
+//       try {
+//         tokenStorage.clearToken();
+//         queryClient.resetQueries({ queryKey: queryKeys.auth.user });
+//         setTwoFactorLoginState(null);
+//       } catch (error) {
+//         console.error('Error in logout handler:', error);
+//       }
+//     },
+//   });
 
-  // 2FA verification mutation
-  const verify2FAMutation = useMutation({
-    mutationFn: (params: { userId: string; token: string }) =>
-      authApi.verify2FA(params.userId, params.token),
-    onSuccess: (data) => {
-      try {
-        updateAuthState(data);
-        setTwoFactorLoginState(null);
-      } catch (error) {
-        console.error('Error in 2FA verification success handler:', error);
-      }
-    },
-  });
+//   // 2FA verification mutation
+//   const verify2FAMutation = useMutation({
+//     mutationFn: (params: { userId: string; token: string }) =>
+//       authApi.verify2FA(params.userId, params.token),
+//     onSuccess: (data) => {
+//       try {
+//         updateAuthState(data);
+//         setTwoFactorLoginState(null);
+//       } catch (error) {
+//         console.error('Error in 2FA verification success handler:', error);
+//       }
+//     },
+//   });
 
   // 2FA setup mutation
   const setup2FAMutation = useMutation({
     mutationFn: authApi.setup2FA,
   });
 
-  // 2FA enable mutation
-  const enable2FAMutation = useMutation({
-    mutationFn: (token: string) => authApi.enable2FA(token),
-    onSuccess: () => {
-      try {
-        queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
-      } catch (error) {
-        console.error('Error invalidating queries after enabling 2FA:', error);
-      }
-    },
-  });
+//   // 2FA enable mutation
+//   const enable2FAMutation = useMutation({
+//     mutationFn: (token: string) => authApi.enable2FA(token),
+//     onSuccess: () => {
+//       try {
+//         queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
+//       } catch (error) {
+//         console.error('Error invalidating queries after enabling 2FA:', error);
+//       }
+//     },
+//   });
 
-  // 2FA disable mutation
-  const disable2FAMutation = useMutation({
-    mutationFn: (token: string) => authApi.disable2FA(token),
-    onSuccess: () => {
-      try {
-        queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
-      } catch (error) {
-        console.error('Error invalidating queries after disabling 2FA:', error);
-      }
-    },
-  });
+//   // 2FA disable mutation
+//   const disable2FAMutation = useMutation({
+//     mutationFn: (token: string) => authApi.disable2FA(token),
+//     onSuccess: () => {
+//       try {
+//         queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
+//       } catch (error) {
+//         console.error('Error invalidating queries after disabling 2FA:', error);
+//       }
+//     },
+//   });
 
-  // Token refresh mutation
-  const refreshTokenMutation = useMutation({
-    mutationFn: (refreshToken: string) => authApi.refreshToken(refreshToken),
-    onSuccess: updateAuthState,
-  });
+//   // Token refresh mutation
+//   const refreshTokenMutation = useMutation({
+//     mutationFn: (refreshToken: string) => authApi.refreshToken(refreshToken),
+//     onSuccess: updateAuthState,
+//   });
 
-  // Automatic token refresh if the token is about to expire.
-useEffect(() => {
-  if (!isAuthenticated) return;
+//   // Automatic token refresh if the token is about to expire.
+// useEffect(() => {
+//   if (!isAuthenticated) return;
 
-  const refreshTokenIfNeeded = () => {
-    const refreshToken = tokenStorage.getRefreshToken();
-    if (refreshToken && tokenStorage.isTokenExpiringNear()) {
-      refreshTokenMutation.mutate(refreshToken, {
-        onSuccess: (data) => {
-          tokenStorage.saveTokens({ token: data.token, refreshToken: data.refreshToken, expiresAt: data.expiresAt });
-          queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
-        },
-        onError: (error) => {
-          console.error('Token refresh failed:', error);
-          tokenStorage.clearToken();
-          queryClient.resetQueries({ queryKey: queryKeys.auth.user });
-        },
-      });
-    }
-  };
+//   const refreshTokenIfNeeded = () => {
+//     const refreshToken = tokenStorage.getRefreshToken();
+//     if (refreshToken && tokenStorage.isTokenExpiringNear()) {
+//       refreshTokenMutation.mutate(refreshToken, {
+//         onSuccess: (data) => {
+//           tokenStorage.saveTokens({ token: data.token, refreshToken: data.refreshToken, expiresAt: data.expiresAt });
+//           queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
+//         },
+//         onError: (error) => {
+//           console.error('Token refresh failed:', error);
+//           tokenStorage.clearToken();
+//           queryClient.resetQueries({ queryKey: queryKeys.auth.user });
+//         },
+//       });
+//     }
+//   };
 
-  refreshTokenIfNeeded();
-  const intervalId = setInterval(refreshTokenIfNeeded, 60000);
-  return () => clearInterval(intervalId);
-}, [isAuthenticated, queryClient]);
+//   refreshTokenIfNeeded();
+//   const intervalId = setInterval(refreshTokenIfNeeded, 60000);
+//   return () => clearInterval(intervalId);
+// }, [isAuthenticated, queryClient]);
 
-  // Authentication action functions.
+//   // Authentication action functions.
   const signIn = useCallback(
     (credentials: SignInCredentials) => loginMutation.mutateAsync(credentials),
     [loginMutation]
   );
 
-  const adminSignIn = useCallback(
-    (credentials: SignInCredentials, adminPassword: string) =>
-      adminLoginMutation.mutateAsync({ credentials, adminPassword }),
-    [adminLoginMutation]
-  );
+//   const adminSignIn = useCallback(
+//     (credentials: SignInCredentials, adminPassword: string) =>
+//       adminLoginMutation.mutateAsync({ credentials, adminPassword }),
+//     [adminLoginMutation]
+//   );
 
   const signUp = useCallback(
     (userData: SignUpData) => registerMutation.mutateAsync(userData),
     [registerMutation]
   );
 
-  const signOut = useCallback(
-    (userId: string) => logoutMutation.mutateAsync(userId),
-    [logoutMutation]
-  );
+  // const signOut = useCallback(
+  //   (userId: string) => logoutMutation.mutateAsync(userId),
+  //   [logoutMutation]
+  // );
 
-  const verifyTwoFactorAuth = useCallback(
-    (userId: string, code: string) => verify2FAMutation.mutateAsync({ userId, token: code }),
-    [verify2FAMutation]
-  );
+  // const verifyTwoFactorAuth = useCallback(
+  //   (userId: string, code: string) => verify2FAMutation.mutateAsync({ userId, token: code }),
+  //   [verify2FAMutation]
+  // );
 
   const setupTwoFactorAuth = useCallback(
     () => setup2FAMutation.mutateAsync(),
     [setup2FAMutation]
   );
 
-  const enableTwoFactorAuth = useCallback(
-    (code: string) => enable2FAMutation.mutateAsync(code),
-    [enable2FAMutation]
-  );
+  // const enableTwoFactorAuth = useCallback(
+  //   (code: string) => enable2FAMutation.mutateAsync(code),
+  //   [enable2FAMutation]
+  // );
 
-  const disableTwoFactorAuth = useCallback(
-    (code: string) => disable2FAMutation.mutateAsync(code),
-    [disable2FAMutation]
-  );
+  // const disableTwoFactorAuth = useCallback(
+  //   (code: string) => disable2FAMutation.mutateAsync(code),
+  //   [disable2FAMutation]
+  // );
 
-  const refreshAuthToken = useCallback(
-    (refreshTokenValue: string) => refreshTokenMutation.mutateAsync(refreshTokenValue),
-    [refreshTokenMutation]
-  );
+  // const refreshAuthToken = useCallback(
+  //   (refreshTokenValue: string) => refreshTokenMutation.mutateAsync(refreshTokenValue),
+  //   [refreshTokenMutation]
+  // );
 
-  const cancelTwoFactorVerification = useCallback(() => {
-    setTwoFactorLoginState(null);
-  }, []);
+  // const cancelTwoFactorVerification = useCallback(() => {
+  //   setTwoFactorLoginState(null);
+  // }, []);
 
   // Consolidate loading states from user query and mutations.
   const mutations = [
     loginMutation,
-    adminLoginMutation,
+    // adminLoginMutation,
     registerMutation,
-    logoutMutation,
-    verify2FAMutation,
-    setup2FAMutation,
-    enable2FAMutation,
-    disable2FAMutation,
-    refreshTokenMutation,
+    // logoutMutation,
+    // verify2FAMutation,
+    // setup2FAMutation,
+    // enable2FAMutation,
+    // disable2FAMutation,
+    // refreshTokenMutation,
   ];
 
   const isLoading =
@@ -247,17 +241,16 @@ useEffect(() => {
   // Stabilize and memoize the returned API.
   return useMemo(
     () => ({
-      // Authentication functions.
       signIn,
-      adminSignIn,
+      // adminSignIn,
       signUp,
-      signOut,
-      verifyTwoFactorAuth,
+      // signOut,
+      // verifyTwoFactorAuth,
       setupTwoFactorAuth,
-      enableTwoFactorAuth,
-      disableTwoFactorAuth,
-      refreshAuthToken,
-      cancelTwoFactorVerification,
+      // enableTwoFactorAuth,
+      // disableTwoFactorAuth,
+      // refreshAuthToken,
+      // cancelTwoFactorVerification,
 
       // State and data.
       user: userQuery.data,
@@ -268,15 +261,15 @@ useEffect(() => {
     }),
     [
       signIn,
-      adminSignIn,
+      // adminSignIn,
       signUp,
-      signOut,
-      verifyTwoFactorAuth,
+      // signOut,
+      // verifyTwoFactorAuth,
       setupTwoFactorAuth,
-      enableTwoFactorAuth,
-      disableTwoFactorAuth,
-      refreshAuthToken,
-      cancelTwoFactorVerification,
+      // enableTwoFactorAuth,
+      // disableTwoFactorAuth,
+      // refreshAuthToken,
+      // cancelTwoFactorVerification,
       userQuery.data,
       twoFactorLoginState,
       isAuthenticated,

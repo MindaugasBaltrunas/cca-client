@@ -4,7 +4,8 @@ import * as Yup from 'yup';
 import FormInput from '../../components/InputFields/FormInput';
 import { NavLink } from 'react-router-dom'; // Corrected from 'react-router'
 import style from './login.module.scss';
-import TwoFactorAuthSetup from '../../components/Auth/TwoFactorAuthSetup'; // Adjust the import path as necessary
+import { useAuth } from '../../../context/AuthContext';
+// import TwoFactorAuthSetup from '../../components/Auth/TwoFactorAuthSetup'; // Adjust the import path as necessary
 
 interface LoginValues {
   email: string;
@@ -17,18 +18,24 @@ export const LoginForm: React.FC = () => {
     password: ''
   };
 
+  const { signIn, isLoading } = useAuth();
+
   const validationSchema = Yup.object({
     email: Yup.string().email('Invalid email').required('Required'),
     password: Yup.string().required('Required')
   });
 
-  const handleSubmit = (values: LoginValues) => {
-    console.log(values);
+  const handleSubmit = async (values: LoginValues) => {
+    // "email": "johns.doe.0@example.com",
+    // "password": "Password123@",
+    // "role": "user"
+    const response = await signIn({ email: "johns.doe.0@example.com", password: "Password123@", role: "user" });
+    console.log(response);
   };
 
   return (
     <div className={style.container}>
-       <TwoFactorAuthSetup />
+       {/* <TwoFactorAuthSetup /> */}
       <div className={style.auth}>
         <h1>Login</h1>
         <Formik
