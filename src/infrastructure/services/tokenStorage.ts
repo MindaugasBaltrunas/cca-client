@@ -1,27 +1,26 @@
 interface TokenInfo {
   token: string;
-  refreshToken: string;
-  expiresAt: number;
+  id: string;
+  refreshToken?: string;
+  expiresAt?: number;
 }
 
-/**
- * Servisas, atsakingas už token valdymą
- */
 export const tokenStorage = {
-  /**
-   * Išsaugoti tokenus į localStorage
-   */
   saveTokens: (tokenInfo: TokenInfo): void => {
-    localStorage.setItem('token', tokenInfo.token);
-    localStorage.setItem('refreshToken', tokenInfo.refreshToken);
-    localStorage.setItem('expiresAt', tokenInfo.expiresAt.toString());
+    if (
+      tokenInfo.token ||
+      tokenInfo.id
+    ) {
+      localStorage.setItem('token', tokenInfo.token);
+      localStorage.setItem('id', tokenInfo.id);
+    }
+    return;
   },
 
-  /**
-   * Gauti token iš localStorage
-   */
-  getToken: (): string | null => {
-    return localStorage.getItem('token');
+  getToken: (): { token: string | null; id: string | null; } => {
+    const token = localStorage.getItem('token');
+    const id = localStorage.getItem('id');
+    return {token, id};
   },
 
   /**
@@ -54,7 +53,7 @@ export const tokenStorage = {
   isTokenExpiringNear: (): boolean => {
     const expiresAt = tokenStorage.getExpiresAt();
     if (!expiresAt) return true;
-    
+
     const fiveMinutesInMs = 5 * 60 * 1000;
     return Date.now() >= (expiresAt - fiveMinutesInMs);
   },

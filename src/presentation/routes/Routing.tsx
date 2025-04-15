@@ -1,11 +1,12 @@
 import { JSX, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
-import Preloader from "../pages/preloader/preloader";
+import Preloader from "../components/Preloader/preloader";
 import Layout from "../components/Layout/Layout";
 import Dashboard from "../pages/dashboard/dashboard";
 import LoginForm from "../pages/loginPage/LoginPage";
 import TwoFactorAuthSetup from "../components/Auth/TwoFactorAuthSetup";
+import TwoFactorVerifyForm from "../components/Auth/TwoFactorVerifyForm";
 
 const Routing = (): JSX.Element => {
   return (
@@ -34,6 +35,15 @@ const Routing = (): JSX.Element => {
           />
         </Route> */}
         <Route
+          path="/verify-2fa"
+          element={
+            <Layout>
+           
+              <TwoFactorVerifyForm />
+            </Layout>
+          }
+        />
+               <Route
           path="/2fa-setup"
           element={
             <Layout>

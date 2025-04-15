@@ -7,12 +7,15 @@ const TwoFactorVerifyForm: React.FC = () => {
   const [verificationCode, setVerificationCode] = useState('');
   const navigate = useNavigate();
 
+  console.log('twoFactorLoginState:', twoFactorLoginState);
+  
+
   // Redirect to login if there’s no pending two-factor login state.
-  useEffect(() => {
-    if (!twoFactorLoginState) {
-      navigate('/login');
-    }
-  }, [twoFactorLoginState, navigate]);
+  // useEffect(() => {
+  //   if (!twoFactorLoginState) {
+  //     navigate('/login');
+  //   }
+  // }, [twoFactorLoginState, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

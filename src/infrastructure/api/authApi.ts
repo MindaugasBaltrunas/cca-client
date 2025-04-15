@@ -7,10 +7,16 @@ interface TokenResponse {
   expiresAt: number;
 }
 
-interface LoginResponse extends TokenResponse {
-  user?: UserResponseData;
-  twoFactorRequired?: boolean;
-  userId?: string;
+interface LoginResponse {
+  status: string;
+  message: string;
+  data: data;
+}
+
+interface data{
+  accessToken: string;
+  userId:string
+
 }
 
 interface TwoFactorSetupResponse {
@@ -23,13 +29,7 @@ interface MessageResponse {
   success: boolean;
 }
 
-/**
- * Autentifikacijos API funkcijos
- */
 export const authApi = {
-  /**
-   * Vartotojo prisijungimas
-   */
   login: async (credentials: SignInCredentials): Promise<LoginResponse> => {
     const response = await apiClient.post('/', credentials, {
       headers: {

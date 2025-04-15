@@ -7,6 +7,7 @@ interface FormInputProps {
   type: string;
   required?: boolean;
   placeholder?: string;
+  autoComplete?: string;
 }
 
 const FormInput: React.FC<FormInputProps> = ({ 
@@ -14,7 +15,8 @@ const FormInput: React.FC<FormInputProps> = ({
   label, 
   type, 
   required, 
-  placeholder 
+  placeholder,
+  autoComplete
 }) => {
   const formik = useFormikContext<any>();
   const fieldProps = formik.getFieldProps(name);
@@ -31,6 +33,7 @@ const FormInput: React.FC<FormInputProps> = ({
         id={name}
         type={type}
         placeholder={placeholder}
+        autoComplete={autoComplete}
         {...fieldProps}
       />
       {formik.touched[name] && formik.errors[name] ? (
