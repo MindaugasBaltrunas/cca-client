@@ -13,9 +13,23 @@ interface LoginResponse {
   data: data;
 }
 
-interface data{
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  profileImageUrl: string;
+}
+
+export interface IVerify2FAResponse {
+  token: string,
+  refreshToken: string,
+  data: User
+}
+
+interface data {
   accessToken: string;
-  userId:string
+  userId: string
 
 }
 
@@ -142,7 +156,7 @@ export const authApi = {
   /**
    * 2FA patvirtinimas prisijungimo metu
    */
-  verify2FA: async (userId: string, token: string): Promise<LoginResponse> => {
+  verify2FA: async (userId: string, token: string): Promise<IVerify2FAResponse> => {
     const response = await apiClient.post('/api', { userId, token }, {
       headers: {
         'X-API-Endpoint': API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.VERIFY,

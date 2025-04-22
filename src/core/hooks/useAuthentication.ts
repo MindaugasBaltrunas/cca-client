@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authApi } from '../../infrastructure/api/authApi';
+import { authApi, IVerify2FAResponse } from '../../infrastructure/api/authApi';
 import { tokenStorage } from '../../infrastructure/services/tokenStorage';
 import { SignInCredentials, SignUpData, LoginState } from '../../shared/types/api.types';
 import { queryKeys } from '../../utils/queryKeys';
@@ -91,19 +91,23 @@ export const useAuthentication = () => {
   //     },
   //   });
 
-  //   // 2FA verification mutation
-  //   const verify2FAMutation = useMutation({
-  //     mutationFn: (params: { userId: string; token: string }) =>
-  //       authApi.verify2FA(params.userId, params.token),
-  //     onSuccess: (data) => {
-  //       try {
-  //         updateAuthState(data);
-  //         setTwoFactorLoginState(null);
-  //       } catch (error) {
-  //         console.error('Error in 2FA verification success handler:', error);
-  //       }
-  //     },
-  //   });
+    // 2FA verification mutation
+    const verify2FAMutation = useMutation({
+      mutationFn: (params: { userId: string; token: string }) =>
+        authApi.verify2FA(params.userId, params.token),
+      onSuccess: (response: IVerify2FAResponse) => {
+        try {
+          updateAuthState({
+            accessToken: response.token,
+            userId: response.data.id,
+          });
+          setTwoFactorLoginState(null);
+        } catch (error) {
+          console.error('Error in 2FA verification success handler:', error);
+        }
+      },
+    });
+    
 
   // 2FA setup mutation
   const setup2FAMutation = useMutation({
@@ -188,10 +192,10 @@ export const useAuthentication = () => {
   //   [logoutMutation]
   // );
 
-  // const verifyTwoFactorAuth = useCallback(
-  //   (userId: string, code: string) => verify2FAMutation.mutateAsync({ userId, token: code }),
-  //   [verify2FAMutation]
-  // );
+  const verifyTwoFactorAuth = useCallback(
+    (userId: string, code: string) => verify2FAMutation.mutateAsync({ userId, token: code }),
+    [verify2FAMutation]
+  );
 
   const setupTwoFactorAuth = useCallback(
     () => setup2FAMutation.mutateAsync(),
@@ -243,7 +247,7 @@ export const useAuthentication = () => {
       // adminSignIn,
       signUp,
       // signOut,
-      // verifyTwoFactorAuth,
+      verifyTwoFactorAuth,
       setupTwoFactorAuth,
       // enableTwoFactorAuth,
       // disableTwoFactorAuth,
@@ -262,7 +266,7 @@ export const useAuthentication = () => {
       // adminSignIn,
       signUp,
       // signOut,
-      // verifyTwoFactorAuth,
+      verifyTwoFactorAuth,
       setupTwoFactorAuth,
       // enableTwoFactorAuth,
       // disableTwoFactorAuth,

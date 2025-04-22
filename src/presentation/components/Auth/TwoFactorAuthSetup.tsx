@@ -1,78 +1,25 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../../context/AuthContext";
 
-interface TwoFactorAuthSetupProps {
-  onSuccess?: () => void;
-  onCancel?: () => void;
-}
-
-/**
- * TwoFactorAuthSetup Component
- * Handles setting up two-factor authentication for a user account
- */
-const TwoFactorAuthSetup: React.FC<TwoFactorAuthSetupProps> = ({
-  onSuccess,
-  onCancel,
-}) => {
-  // Component state
-  const [verificationCode, setVerificationCode] = useState("");
+const TwoFactorAuthSetup: React.FC = () => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
-  const [secretKey, setSecretKey] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
 
-  // Get 2FA methods from auth context
-  const { setupTwoFactorAuth, isLoading } = useAuth();
+  const { setupTwoFactorAuth, twoFactorLoginState } = useAuth();
 
-  // Request 2FA setup data on component mount
-  useEffect(() => {
-    const getSetupInfo = async () => {
-      try {
-        const response = await setupTwoFactorAuth();
-        console.log("Response from setupTwoFactorAuth:", response);
+  if (!hasFetched) {
+    setHasFetched(true);
+    setupTwoFactorAuth()
+      .then((response) => {
         setQrCodeUrl(response.qrCodeUrl);
-        setSecretKey(response.secretKey);
-      } catch (err: any) {
-        setError(err.message || "Failed to set up two-factor authentication");
-      }
-    };
-    getSetupInfo();
-  }, []);
-  console.log("qrCodeUrl", qrCodeUrl);
-  console.log("secretKey", secretKey);
-
-  // Optional: form submit handler if you want to handle code verification
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!verificationCode) {
-  //     setError('Verification code is required');
-  //     return;
-  //   }
-  //   try {
-  //     // Add your verification logic here
-  //     setIsSetupComplete(true);
-  //     if (onSuccess) {
-  //       onSuccess();
-  //     }
-  //   } catch (err: any) {
-  //     setError(err.message || 'Failed to verify code. Please try again.');
-  //   }
-  // };
-
-  // Setup completion message
-  if (isSetupComplete) {
-    return (
-      <div className="two-factor-setup-complete">
-        <h2>Two-Factor Authentication Enabled</h2>
-        <p>Your account is now protected with two-factor authentication.</p>
-        <p>You will be asked for a verification code each time you sign in.</p>
-        {/* <button onClick={onSuccess}>Continue</button> */}
-      </div>
-    );
+      })
+      .catch((err: any) => {
+        setError(err.message || "Failed to load QR code");
+      });
   }
 
-  // Main setup form
   return (
     <div className="two-factor-auth-setup">
       <h2>Set Up Two-Factor Authentication</h2>
@@ -83,18 +30,14 @@ const TwoFactorAuthSetup: React.FC<TwoFactorAuthSetupProps> = ({
         <p>Follow these steps to enable two-factor authentication:</p>
         <ol>
           <li>
-            Install an authenticator app on your mobile device (like Google
-            Authenticator, Authy, or Microsoft Authenticator)
+            Install an authenticator app (Google Authenticator, Authy, etc.)
           </li>
-          <li>Scan the QR code below with your authenticator app</li>
-          <li>
-            Enter the 6-digit verification code from your authenticator app to
-            complete setup
-          </li>
+          <li>Scan the QR code below</li>
+          <li>Enter the 6-digit code when asked</li>
         </ol>
       </div>
 
-      {qrCodeUrl && (
+      {qrCodeUrl ? (
         <div className="qr-code-container">
           <img src={qrCodeUrl} alt="QR Code for Two-Factor Authentication" />
           <button
@@ -102,47 +45,12 @@ const TwoFactorAuthSetup: React.FC<TwoFactorAuthSetupProps> = ({
             className="text-button"
             onClick={() => setShowManualEntry(!showManualEntry)}
           >
-            {showManualEntry ? "Hide" : "Can't scan? Manual entry"}
+            {showManualEntry ? "Hide manual entry" : "Can't scan? Manual entry"}
           </button>
-
-          {showManualEntry && secretKey && (
-            <div className="manual-entry">
-              <p>Enter this code manually in your authenticator app:</p>
-              <div className="secret-key">{secretKey}</div>
-            </div>
-          )}
         </div>
+      ) : (
+        <p>Loading QR code...</p>
       )}
-
-      {/* Uncomment and adjust the below form if you need the verification step */}
-      {/* <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label htmlFor="verificationCode">Verification Code</label>
-          <input
-            type="text"
-            id="verificationCode"
-            value={verificationCode}
-            onChange={(e) => setVerificationCode(e.target.value)}
-            placeholder="Enter 6-digit code"
-            autoComplete="one-time-code"
-            maxLength={6}
-            pattern="[0-9]{6}"
-            inputMode="numeric"
-          />
-        </div>
-        
-        <div className="form-actions">
-          <button type="submit" disabled={isLoading || !qrCodeUrl}>
-            {isLoading ? 'Verifying...' : 'Verify and Enable'}
-          </button>
-          
-          {onCancel && (
-            <button type="button" onClick={onCancel} disabled={isLoading}>
-              Cancel
-            </button>
-          )}
-        </div>
-      </form> */}
     </div>
   );
 };

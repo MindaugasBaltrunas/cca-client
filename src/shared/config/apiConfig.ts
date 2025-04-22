@@ -1,9 +1,5 @@
-// src/infrastructure/config/apiConfig.ts
 import axios from 'axios';
 
-/**
- * API konfigūracija pagal pateiktus endpoint'us
- */
 export const API_CONFIG = {
   BASE_URL: 'http://localhost:8080',
   SECRET_KEY: '1234567890abcdefg',

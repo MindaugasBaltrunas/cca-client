@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { NavLink, useNavigate } from "react-router-dom";
@@ -27,7 +27,7 @@ const initialValues: LoginValues = {
 
 export const LoginForm: React.FC = () => {
   const { signIn, isLoading } = useAuth();
-  const navigate = useNavigate(); // Add this
+  const navigate = useNavigate();
   
   const handleSubmit = async (
     values: LoginValues,
@@ -41,7 +41,6 @@ export const LoginForm: React.FC = () => {
       if (response.status === "pending") {
         console.log("Two-factor authentication required.");
         
-        // Navigate to the 2FA verification page, potentially with any needed data
         navigate('/verify-2fa')
       }
     } catch (error) {
@@ -89,7 +88,7 @@ export const LoginForm: React.FC = () => {
                 </button>
                 
                 <div className={styles.links}>
-                  Not a user? <NavLink to="/signup">Sign Up</NavLink>
+                  Not a user? <NavLink to="/2fa-setup">2FA Setup</NavLink>
                 </div>
                 
                 <div className={styles.links}>

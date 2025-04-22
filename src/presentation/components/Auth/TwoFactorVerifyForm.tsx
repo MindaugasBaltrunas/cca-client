@@ -3,9 +3,9 @@ import { useAuth } from '../../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const TwoFactorVerifyForm: React.FC = () => {
-  const { twoFactorLoginState, error, isLoading } = useAuth();
+  const { twoFactorLoginState, error, isLoading, verifyTwoFactorAuth } = useAuth();
   const [verificationCode, setVerificationCode] = useState('');
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   console.log('twoFactorLoginState:', twoFactorLoginState);
   
@@ -19,18 +19,22 @@ const TwoFactorVerifyForm: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!twoFactorLoginState?.userId) return;
+    // if (!twoFactorLoginState?.userId) return;
 
     try {
-      // await verifyTwoFactorAuth(twoFactorLoginState.userId, verificationCode);
-      navigate('/dashboard');
+      if (twoFactorLoginState?.userId) {
+        await verifyTwoFactorAuth(twoFactorLoginState.userId, verificationCode);
+      } else {
+        console.error('Two-factor login state is missing or invalid.');
+      }
+      // navigate('/dashboard');
     } catch (err) {
       console.error('2FA verification failed:', err);
     }
   };
 
   const handleCancel = () => {
-    navigate('/login');
+    // navigate('/login');
   };
 
   return (

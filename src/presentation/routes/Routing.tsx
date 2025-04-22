@@ -38,16 +38,14 @@ const Routing = (): JSX.Element => {
           path="/verify-2fa"
           element={
             <Layout>
-           
               <TwoFactorVerifyForm />
             </Layout>
           }
         />
-               <Route
+        <Route
           path="/2fa-setup"
           element={
             <Layout>
-           
               <TwoFactorAuthSetup />
             </Layout>
           }
