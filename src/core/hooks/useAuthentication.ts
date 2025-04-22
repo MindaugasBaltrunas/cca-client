@@ -1,19 +1,21 @@
+// useAuthentication.ts - Autentifikacijos hook (funkcinis stilius)
+
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authApi, IVerify2FAResponse } from '../../infrastructure/api/authApi';
-import { tokenStorage } from '../../infrastructure/services/tokenStorage';
-import { SignInCredentials, SignUpData, LoginState } from '../../shared/types/api.types';
+import { authApi, IVerify2FAResponse, LoginState, SignInCredentials, SignUpData, tokenStorage } from '../../infrastructure/services';
 import { queryKeys } from '../../utils/queryKeys';
+
 
 export const useAuthentication = () => {
   const queryClient = useQueryClient();
   const [twoFactorLoginState, setTwoFactorLoginState] = useState<LoginState | null>(null);
 
-  const isAuthenticated = !!tokenStorage.getToken() && !tokenStorage.isTokenExpired();
+  // Patikrinimas, ar vartotojas yra autentifikuotas
+  const isAuthenticated = !!tokenStorage.getToken().token && !tokenStorage.isTokenExpired();
 
+  // Atnaujina autentifikacijos būseną gavus naują žetoną
   const updateAuthState = useCallback(
     (data: { accessToken: string; userId: string }) => {
-
       const { accessToken, userId } = data;
       try {
         tokenStorage.saveTokens({
@@ -28,6 +30,7 @@ export const useAuthentication = () => {
     [queryClient]
   );
 
+  // Apdoroja situaciją, kai reikalingas dviejų faktorių patvirtinimas
   const handleTwoFactorRequired = useCallback(
     (data: { userId?: string; accessToken?: string }, credentials?: SignInCredentials) => {
       if (data?.accessToken && data?.userId) {
@@ -40,23 +43,23 @@ export const useAuthentication = () => {
     []
   );
 
-  // Fetch the current user only when authenticated.
+  // Gauna dabartinio vartotojo duomenis, jei yra prisijungęs
   const userQuery = useQuery({
-    queryKey: queryKeys.auth.user, // now a stable constant!
+    queryKey: queryKeys.auth.user,
     queryFn: authApi.getCurrentUser,
     enabled: isAuthenticated,
-    refetchInterval: 30 * 60 * 1000, // refresh every 30 minutes
+    refetchInterval: 30 * 60 * 1000, // Atnaujina kas 30 minučių
     retry: 1,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000, // 5 minutės
   });
 
-
+  // Prisijungimo mutation
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (response, variables) => {
       try {
         if (response?.status === 'pending') {
-          handleTwoFactorRequired(response.data, variables);
+          handleTwoFactorRequired(response.data || {}, variables);
           return;
         }
       } catch (error) {
@@ -65,132 +68,43 @@ export const useAuthentication = () => {
     },
   });
 
-  //   // Admin login mutation
-  //   const adminLoginMutation = useMutation({
-  //     mutationFn: (params: { credentials: SignInCredentials; adminPassword: string }) =>
-  //       authApi.adminLogin({ ...params.credentials, adminPassword: params.adminPassword }),
-  //     onSuccess: updateAuthState,
-  //   });
-
-  //   // Registration mutation
+  // Registracijos mutation
   const registerMutation = useMutation({
     mutationFn: authApi.register,
   });
 
-  //   // Logout mutation
-  //   const logoutMutation = useMutation({
-  //     mutationFn: authApi.logout,
-  //     onSettled: () => {
-  //       try {
-  //         tokenStorage.clearToken();
-  //         queryClient.resetQueries({ queryKey: queryKeys.auth.user });
-  //         setTwoFactorLoginState(null);
-  //       } catch (error) {
-  //         console.error('Error in logout handler:', error);
-  //       }
-  //     },
-  //   });
+  // 2FA verifikacijos mutation
+  const verify2FAMutation = useMutation({
+    mutationFn: (params: { userId: string; token: string }) =>
+      authApi.verify2FA(params.userId, params.token),
+    onSuccess: (response: IVerify2FAResponse) => {
+      try {
+        updateAuthState({
+          accessToken: response.token,
+          userId: response.data.id,
+        });
+        setTwoFactorLoginState(null);
+      } catch (error) {
+        console.error('Error in 2FA verification success handler:', error);
+      }
+    },
+  });
 
-    // 2FA verification mutation
-    const verify2FAMutation = useMutation({
-      mutationFn: (params: { userId: string; token: string }) =>
-        authApi.verify2FA(params.userId, params.token),
-      onSuccess: (response: IVerify2FAResponse) => {
-        try {
-          updateAuthState({
-            accessToken: response.token,
-            userId: response.data.id,
-          });
-          setTwoFactorLoginState(null);
-        } catch (error) {
-          console.error('Error in 2FA verification success handler:', error);
-        }
-      },
-    });
-    
-
-  // 2FA setup mutation
+  // 2FA nustatymo mutation
   const setup2FAMutation = useMutation({
     mutationFn: authApi.setup2FA,
   });
 
-  //   // 2FA enable mutation
-  //   const enable2FAMutation = useMutation({
-  //     mutationFn: (token: string) => authApi.enable2FA(token),
-  //     onSuccess: () => {
-  //       try {
-  //         queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
-  //       } catch (error) {
-  //         console.error('Error invalidating queries after enabling 2FA:', error);
-  //       }
-  //     },
-  //   });
-
-  //   // 2FA disable mutation
-  //   const disable2FAMutation = useMutation({
-  //     mutationFn: (token: string) => authApi.disable2FA(token),
-  //     onSuccess: () => {
-  //       try {
-  //         queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
-  //       } catch (error) {
-  //         console.error('Error invalidating queries after disabling 2FA:', error);
-  //       }
-  //     },
-  //   });
-
-  //   // Token refresh mutation
-  //   const refreshTokenMutation = useMutation({
-  //     mutationFn: (refreshToken: string) => authApi.refreshToken(refreshToken),
-  //     onSuccess: updateAuthState,
-  //   });
-
-  //   // Automatic token refresh if the token is about to expire.
-  // useEffect(() => {
-  //   if (!isAuthenticated) return;
-
-  //   const refreshTokenIfNeeded = () => {
-  //     const refreshToken = tokenStorage.getRefreshToken();
-  //     if (refreshToken && tokenStorage.isTokenExpiringNear()) {
-  //       refreshTokenMutation.mutate(refreshToken, {
-  //         onSuccess: (data) => {
-  //           tokenStorage.saveTokens({ token: data.token, refreshToken: data.refreshToken, expiresAt: data.expiresAt });
-  //           queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
-  //         },
-  //         onError: (error) => {
-  //           console.error('Token refresh failed:', error);
-  //           tokenStorage.clearToken();
-  //           queryClient.resetQueries({ queryKey: queryKeys.auth.user });
-  //         },
-  //       });
-  //     }
-  //   };
-
-  //   refreshTokenIfNeeded();
-  //   const intervalId = setInterval(refreshTokenIfNeeded, 60000);
-  //   return () => clearInterval(intervalId);
-  // }, [isAuthenticated, queryClient]);
-
-  //   // Authentication action functions.
+  // Autentifikacijos funkcijos
   const signIn = useCallback(
     (credentials: SignInCredentials) => loginMutation.mutateAsync(credentials),
     [loginMutation]
   );
 
-  //   const adminSignIn = useCallback(
-  //     (credentials: SignInCredentials, adminPassword: string) =>
-  //       adminLoginMutation.mutateAsync({ credentials, adminPassword }),
-  //     [adminLoginMutation]
-  //   );
-
   const signUp = useCallback(
     (userData: SignUpData) => registerMutation.mutateAsync(userData),
     [registerMutation]
   );
-
-  // const signOut = useCallback(
-  //   (userId: string) => logoutMutation.mutateAsync(userId),
-  //   [logoutMutation]
-  // );
 
   const verifyTwoFactorAuth = useCallback(
     (userId: string, code: string) => verify2FAMutation.mutateAsync({ userId, token: code }),
@@ -202,59 +116,27 @@ export const useAuthentication = () => {
     [setup2FAMutation]
   );
 
-  // const enableTwoFactorAuth = useCallback(
-  //   (code: string) => enable2FAMutation.mutateAsync(code),
-  //   [enable2FAMutation]
-  // );
-
-  // const disableTwoFactorAuth = useCallback(
-  //   (code: string) => disable2FAMutation.mutateAsync(code),
-  //   [disable2FAMutation]
-  // );
-
-  // const refreshAuthToken = useCallback(
-  //   (refreshTokenValue: string) => refreshTokenMutation.mutateAsync(refreshTokenValue),
-  //   [refreshTokenMutation]
-  // );
-
-  // const cancelTwoFactorVerification = useCallback(() => {
-  //   setTwoFactorLoginState(null);
-  // }, []);
-
-  // Consolidate loading states from user query and mutations.
+  // Mutations būsenų konsolidavimas
   const mutations = [
     loginMutation,
-    // adminLoginMutation,
     registerMutation,
-    // logoutMutation,
-    // verify2FAMutation,
-    // setup2FAMutation,
-    // enable2FAMutation,
-    // disable2FAMutation,
-    // refreshTokenMutation,
   ];
 
   const isLoading =
     userQuery.isLoading || mutations.some((mutation) => mutation.isPending);
 
-  // Consolidate error states.
+  // Klaidos būsenos konsolidavimas
   const error = userQuery.error || mutations.find((mutation) => mutation.error)?.error;
 
-  // Stabilize and memoize the returned API.
+  // Grąžiname stabilų API objektą
   return useMemo(
     () => ({
       signIn,
-      // adminSignIn,
       signUp,
-      // signOut,
       verifyTwoFactorAuth,
       setupTwoFactorAuth,
-      // enableTwoFactorAuth,
-      // disableTwoFactorAuth,
-      // refreshAuthToken,
-      // cancelTwoFactorVerification,
 
-      // State and data.
+      // Būsenos ir duomenys
       user: userQuery.data,
       twoFactorLoginState,
       isAuthenticated,
@@ -263,15 +145,9 @@ export const useAuthentication = () => {
     }),
     [
       signIn,
-      // adminSignIn,
       signUp,
-      // signOut,
       verifyTwoFactorAuth,
       setupTwoFactorAuth,
-      // enableTwoFactorAuth,
-      // disableTwoFactorAuth,
-      // refreshAuthToken,
-      // cancelTwoFactorVerification,
       userQuery.data,
       twoFactorLoginState,
       isAuthenticated,

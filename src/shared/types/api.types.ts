@@ -1,64 +1,69 @@
-// src/infrastructure/types/api.types.ts
+// api.types.ts - API tipų apibrėžimai
 
-/**
- * Vartotojo rolės
- */
-export type UserRole = 'user' | 'admin';
-
-/**
- * Prisijungimo kredencialai
- */
 export interface SignInCredentials {
   email: string;
   password: string;
-  role?: UserRole;
+  twoFactorCode?: string;
 }
 
-/**
- * Registracijos duomenys
- */
 export interface SignUpData {
-  name: string;
   email: string;
   password: string;
-  role?: UserRole;
-  adminPassword?: string;
+  confirmPassword?: string;
+  firstName?: string;
+  lastName?: string;
+  [key: string]: any;
 }
 
-/**
- * Vartotojo duomenys, gaunami iš API
- */
-export interface UserResponseData {
-  id: string;
-  name: string;
-  email: string;
-  role: UserRole;
-  twoFactorEnabled?: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
-
-/**
- * Dviejų faktorių autentifikacijos būsena
- */
-export interface TwoFactorState {
-  enabled: boolean;
-  verified: boolean;
-}
-
-/**
- * Prisijungimo būsena (naudojama 2FA procesui)
- */
 export interface LoginState {
   userId: string;
   credentials: SignInCredentials;
 }
 
-/**
- * API klaidos tipas
- */
+export interface UserData {
+  id: string;
+  email: string;
+  firstName?: string;
+  lastName?: string;
+  isAdmin?: boolean;
+  hasTwoFactorEnabled?: boolean;
+  [key: string]: any;
+}
+
+export interface AuthResponse {
+  status: 'success' | 'error' | 'pending';
+  message?: string;
+  data?: {
+    accessToken?: string;
+    refreshToken?: string;
+    userId?: string;
+    expiresAt?: number;
+    [key: string]: any;
+  };
+}
+
+export interface IVerify2FAResponse {
+  token: string;
+  data: {
+    id: string;
+    [key: string]: any;
+  };
+}
+
+export interface TwoFactorSetupResponse {
+  qrCode: string;
+  secret: string;
+}
+
 export interface ApiError {
   message: string;
-  status: number;
   code?: string;
+  details?: any;
+}
+
+export interface TokenInfo {
+  token: string;
+  id: string;
+  refreshToken?: string;
+  expiresAt?: number;
 }
