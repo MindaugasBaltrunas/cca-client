@@ -9,7 +9,7 @@ export const sanitizeString = (value: string): string => {
       ALLOWED_ATTR: [] 
     });
   } catch (error) {
-    console.error('XSS dezinfekcijos klaida:', error);
+    console.error('XSS sanitize error:', error);
     
     return value.replace(/<[^>]*>/g, '');
   }
@@ -27,7 +27,7 @@ export const sanitizeHTML = (
       ALLOWED_ATTR: ['class', 'style']
     });
   } catch (error) {
-    console.error('HTML dezinfekcijos klaida:', error);
+    console.error('HTML sanitize error:', error);
     return sanitizeString(html); 
   }
 };

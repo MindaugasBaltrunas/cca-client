@@ -12,7 +12,6 @@ export interface SignUpData {
   confirmPassword?: string;
   firstName?: string;
   lastName?: string;
-  [key: string]: any;
 }
 
 export interface LoginState {
@@ -44,6 +43,7 @@ export interface AuthResponse {
 
 export interface IVerify2FAResponse {
   token: string;
+  status: string;
   data: {
     id: string;
     [key: string]: any;

@@ -1,11 +1,8 @@
 import { escapeHTML, sanitizeHTML, sanitizeUrl } from './xssGuard';
 
-export { API_CONFIG } from '../../shared/config/apiConfig';
-
-export { apiClient } from '../../shared/config/apiConfig';
+export { apiClient, API_CONFIG } from '../../shared/config/apiConfig';
 export { authApi } from '../api/authApi';
-export { tokenStorage } from './tokenStorage';
-export { xssGuard } from './xssGuard';
+export { secureTokenStorage } from './tokenStorage';
 
 export {
   sanitizeString,

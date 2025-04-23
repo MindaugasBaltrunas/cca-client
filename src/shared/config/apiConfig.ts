@@ -1,12 +1,13 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { sanitizeObject } from '../../infrastructure/services/xssGuard';
-import { tokenStorage } from '../../infrastructure/services/tokenStorage';
-
+import { logger } from '../utils/logger';
+import { clearTokens, getAccessToken } from '../http';
 
 export const API_CONFIG = {
   BASE_URL: 'http://localhost:8080',
   SECRET_KEY: '1234567890abcdefg',
   API_KEY: '1234567890abcdefg',
+  REQUEST_TIMEOUT: 5000,
   ENDPOINTS: {
     AUTH: {
       SIGN_IN: 'auth:login',
@@ -27,6 +28,7 @@ export const API_CONFIG = {
 
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
+  timeout: API_CONFIG.REQUEST_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
     'X-API-Secret': API_CONFIG.SECRET_KEY,
@@ -58,34 +60,51 @@ const sanitizeRequestData = (data: any): any => {
   return result;
 };
 
+const isAuthExemptEndpoint = (url?: string): boolean => {
+  if (!url) return false;
+  return url.includes('login') || url.includes('register');
+};
+
 axiosInstance.interceptors.request.use(
-  (config) => {
-    const endpointPath = config.url?.split('/').pop();
-    if (endpointPath) {
-      config.headers['X-API-Endpoint'] = endpointPath;
+  async (config) => {
+    try {
+      const endpointPath = config.url?.split('/').pop();
+      if (endpointPath) {
+        config.headers['X-API-Endpoint'] = endpointPath;
+      }
+
+      if (
+        config.url?.includes('2fa') ||
+        config.url?.includes('admin-login')
+      ) {
+        config.headers['X-API-Key'] = API_CONFIG.API_KEY;
+      }
+
+      if (!isAuthExemptEndpoint(config.url)) {
+        try {
+          const token = await getAccessToken();
+          if (token) {
+            config.headers['Authorization'] = `Bearer ${token}`;
+          }
+        } catch (tokenError) {
+          logger.error('Error retrieving access token:', tokenError);
+        }
+      }
+
+      config.url = '/api';
+
+      if (config.data && typeof config.data === 'object') {
+        config.data = sanitizeRequestData(config.data);
+      }
+
+      return config;
+    } catch (error) {
+      logger.error('Request interceptor error:', error);
+      return config;
     }
-
-    if (
-      config.url?.includes('2fa') ||
-      config.url?.includes('admin-login')
-    ) {
-      config.headers['X-API-Key'] = API_CONFIG.API_KEY;
-    }
-
-    const { token } = tokenStorage.getToken();
-    if (token && !config.url?.includes('login') && !config.url?.includes('register')) {
-      config.headers['Authorization'] = `Bearer ${token}`;
-    }
-
-    config.url = '/api';
-
-    if (config.data && typeof config.data === 'object') {
-      config.data = sanitizeRequestData(config.data);
-    }
-
-    return config;
   },
   (error) => {
+    logger.error('Request configuration error:', error);
     return Promise.reject(error);
   }
 );
@@ -99,26 +118,46 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      tokenStorage.clearToken();
+      clearTokens();
     }
     return Promise.reject(error);
   }
 );
 
 export const get = async <T = any>(endpoint: string, params?: any): Promise<AxiosResponse<T>> => {
-  return axiosInstance.get<T>(endpoint, { params });
+  try {
+    return await axiosInstance.get<T>(endpoint, { params });
+  } catch (error) {
+    logger.error(`GET ${endpoint} failed:`, error);
+    throw error;
+  }
 };
 
 export const post = async <T = any>(endpoint: string, data?: any): Promise<AxiosResponse<T>> => {
-  return axiosInstance.post<T>(endpoint, data);
+  try {
+    return await axiosInstance.post<T>(endpoint, data);
+  } catch (error) {
+    logger.error(`POST ${endpoint} failed:`, error);
+    throw error;
+  }
 };
 
 export const put = async <T = any>(endpoint: string, data?: any): Promise<AxiosResponse<T>> => {
-  return axiosInstance.put<T>(endpoint, data);
+  try {
+    return await axiosInstance.put<T>(endpoint, data);
+  } catch (error) {
+    logger.error(`PUT ${endpoint} failed:`, error);
+    throw error;
+  }
 };
 
 export const del = async <T = any>(endpoint: string, params?: any): Promise<AxiosResponse<T>> => {
-  return axiosInstance.delete<T>(endpoint, { params });
+  try {
+    return await axiosInstance.delete<T>(endpoint, { params });
+  } catch (error) {
+    logger.error(`DELETE ${endpoint} failed:`, error);
+    throw error;
+  }
 };
 
 export const apiClient = {
@@ -126,5 +165,6 @@ export const apiClient = {
   post,
   put,
   delete: del,
-  instance: axiosInstance
-};
+  instance: axiosInstance,
+  clearTokens
+}
