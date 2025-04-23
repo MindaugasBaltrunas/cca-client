@@ -1,4 +1,4 @@
-import { sanitizeString } from './xssGuard';
+import { sanitizeObject } from './xssGuard';
 
 interface TokenInfo {
   token: string;
@@ -6,97 +6,101 @@ interface TokenInfo {
   refreshToken?: string;
 }
 
-const TOKEN_KEY = 'token';
-const USER_ID_KEY = 'id';
-const REFRESH_TOKEN_KEY = 'refreshToken';
-const EXPIRES_AT_KEY = 'expiresAt';
+interface EncryptedData {
+  iv: number[];
+  data: number[];
+}
 
-export const saveTokens = (tokenInfo: TokenInfo): void => {
-  try {
-    if (!tokenInfo.token || !tokenInfo.id) {
-      console.error('Token data is not valid:', tokenInfo);
-      return;
+const ALGORITHM = { name: "AES-GCM", length: 256 };
+const IV_LENGTH = 12;
+
+const createSecureTokenStorage = () => {
+  let cryptoKey: CryptoKey | null = null;
+
+  const generateKey = async (): Promise<CryptoKey> => {
+    if (cryptoKey) return cryptoKey;
+
+    cryptoKey = await crypto.subtle.generateKey(ALGORITHM, true, ['encrypt', 'decrypt']);
+    return cryptoKey;
+  };
+
+  const encrypt = async (text: string): Promise<EncryptedData> => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(text);
+    const iv = crypto.getRandomValues(new Uint8Array(IV_LENGTH));
+    const key = await generateKey();
+
+    const encrypted = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+
+    return {
+      iv: Array.from(iv),
+      data: Array.from(new Uint8Array(encrypted))
+    };
+  };
+
+  const decrypt = async (encryptedData: EncryptedData): Promise<string> => {
+    const iv = new Uint8Array(encryptedData.iv);
+    const data = new Uint8Array(encryptedData.data);
+    const key = await generateKey();
+
+    const decrypted = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, data);
+    return new TextDecoder().decode(decrypted);
+  };
+
+  const setItem = async (key: string, value: string): Promise<void> => {
+    const encrypted = await encrypt(value);
+    localStorage.setItem(key, JSON.stringify(encrypted));
+  };
+
+  const getItem = async (key: string): Promise<string | null> => {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+
+    try {
+      const encrypted: EncryptedData = JSON.parse(raw);
+      return await decrypt(encrypted);
+    } catch (err) {
+      console.error(`Decrypting "${key}" failed:`, err);
+      return null;
     }
+  };
 
-    const safeToken = sanitizeString(tokenInfo.token);
-    const safeId = sanitizeString(tokenInfo.id);
+  const saveTokens = async (tokenInfo: TokenInfo): Promise<void> => {
+    try {
+      const sanitized = sanitizeObject(tokenInfo);
 
-    localStorage.setItem(TOKEN_KEY, safeToken);
-    localStorage.setItem(USER_ID_KEY, safeId);
+      if (!sanitized.token || !sanitized.id) {
+        throw new Error('Missing required fields: token or id');
+      }
 
-    if (tokenInfo.refreshToken) {
-      localStorage.setItem(
-        REFRESH_TOKEN_KEY, 
-        sanitizeString(tokenInfo.refreshToken)
-      );
+      await setItem('token', sanitized.token);
+      await setItem('id', sanitized.id);
+
+      if (sanitized.refreshToken) {
+        await setItem('refreshToken', sanitized.refreshToken);
+      }
+    } catch (err) {
+      console.error('Failed to save tokens:', err);
     }
+  };
 
-  } catch (error) {
-    console.error('Error to save token:', error);
-  }
+  const getToken = () => getItem('token');
+  const getId = () => getItem('id');
+  const getRefreshToken = () => getItem('refreshToken');
+
+  const clear = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('id');
+    localStorage.removeItem('refreshToken');
+  };
+
+  return {
+    saveTokens,
+    getToken,
+    getId,
+    getRefreshToken,
+    clear
+  };
 };
 
-export const getToken = (): { token: string | null; id: string | null } => {
-  try {
-    const token = localStorage.getItem(TOKEN_KEY);
-    const id = localStorage.getItem(USER_ID_KEY);
-    return { token, id };
-  } catch (error) {
-    console.error('Get token error:', error);
-    return { token: null, id: null };
-  }
-};
-
-export const getRefreshToken = (): string | null => {
-  try {
-    return localStorage.getItem(REFRESH_TOKEN_KEY);
-  } catch (error) {
-    console.error('Get refresh token error:', error);
-    return null;
-  }
-};
-
-export const getExpiresAt = (): number | null => {
-  try {
-    const expiresAt = localStorage.getItem(EXPIRES_AT_KEY);
-    return expiresAt ? parseInt(expiresAt, 10) : null;
-  } catch (error) {
-    console.error('Get expires at error:', error);
-    return null;
-  }
-};
-
-export const isTokenExpired = (): boolean => {
-  const expiresAt = getExpiresAt();
-  if (!expiresAt) return true;
-  return Date.now() >= expiresAt;
-};
-
-export const isTokenExpiringNear = (): boolean => {
-  const expiresAt = getExpiresAt();
-  if (!expiresAt) return true;
-
-  const fiveMinutesInMs = 5 * 60 * 1000;
-  return Date.now() >= (expiresAt - fiveMinutesInMs);
-};
-
-export const clearToken = (): void => {
-  try {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_ID_KEY);
-    localStorage.removeItem(REFRESH_TOKEN_KEY);
-    localStorage.removeItem(EXPIRES_AT_KEY);
-  } catch (error) {
-    console.error('Error removing token:', error);
-  }
-};
-
-export const tokenStorage = {
-  saveTokens,
-  getToken,
-  getRefreshToken,
-  getExpiresAt,
-  isTokenExpired,
-  isTokenExpiringNear,
-  clearToken
-};
+export const secureTokenStorage = createSecureTokenStorage();
