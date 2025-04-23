@@ -5,6 +5,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { FormikProvider } from "./shared/providers/formik/formikProvider";
 import { PaginationProvider } from "./shared/providers/paginationProvider";
 import { AuthProvider } from "./context/AuthContext";
+import { CspMeta } from "./shared/providers/CspMeta";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,27 +27,28 @@ interface AppProviderProps {
 
 const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   return (
-    <QueryClientProvider client={queryClient}>
-      <Router>
-        <AuthProvider>
-          <FormikProvider
-            config={{
-              validateOnBlur: true,
-              validateOnChange: false,
-              validateOnMount: false,
-            }}
-          >
-            <PaginationProvider>
-              {children}
-            </PaginationProvider>
-          </FormikProvider>
-        </AuthProvider>
-      </Router>
+    <>
+      <CspMeta />
+      <QueryClientProvider client={queryClient}>
+        <Router>
+          <AuthProvider>
+            <FormikProvider
+              config={{
+                validateOnBlur: true,
+                validateOnChange: false,
+                validateOnMount: false,
+              }}
+            >
+              <PaginationProvider>{children}</PaginationProvider>
+            </FormikProvider>
+          </AuthProvider>
+        </Router>
 
-      {process.env.NODE_ENV === "development" && (
-        <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-      )}
-    </QueryClientProvider>
+        {process.env.NODE_ENV === "development" && (
+          <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+        )}
+      </QueryClientProvider>
+    </>
   );
 };
 
