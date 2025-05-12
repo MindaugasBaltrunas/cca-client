@@ -47,7 +47,7 @@ const retryRequestWithNewToken = (
 };
 
 const handleAuthFailure = (): void => {
-    tokenStorage.clearTokens();
+    tokenStorage.secureTokenStorage.clear();
 
     EventBus.emit('auth:sessionExpired');
 

@@ -1,6 +1,6 @@
 import { AuthResponse } from '../../shared/types/api.types';
 import { logger } from '../../shared/utils/logger';
-import * as secureTokenStorage from './tokenStorage';
+import { secureTokenStorage } from '../services/index';
 
 const createTokenRefreshService = () => {
   let isRefreshing = false;
@@ -19,7 +19,7 @@ const createTokenRefreshService = () => {
     logger.error('Token refresh failed:', error);
     refreshSubscribers.forEach(callback => callback(''));
     refreshSubscribers = [];
-    secureTokenStorage.clearTokens();
+    secureTokenStorage.clear();
   };
 
   const isRefreshInProgress = (): boolean => isRefreshing;
@@ -34,7 +34,7 @@ const createTokenRefreshService = () => {
     const refreshToken = await secureTokenStorage.getRefreshToken();
     
     if (!refreshToken) {
-      secureTokenStorage.clearTokens();
+      secureTokenStorage.clear();
       throw new Error('No refresh token available');
     }
     

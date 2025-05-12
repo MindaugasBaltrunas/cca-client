@@ -1,8 +1,8 @@
 // useAuthentication.ts - Autentifikacijos hook (funkcinis stilius)
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authApi, IVerify2FAResponse, LoginState, SignInCredentials, SignUpData, tokenStorage } from '../../infrastructure/services';
+import { authApi, IVerify2FAResponse, LoginState, SignInCredentials, SignUpData, secureTokenStorage } from '../../infrastructure/services';
 import { queryKeys } from '../../utils/queryKeys';
 
 
@@ -11,16 +11,15 @@ export const useAuthentication = () => {
   const [twoFactorLoginState, setTwoFactorLoginState] = useState<LoginState | null>(null);
 
   // Patikrinimas, ar vartotojas yra autentifikuotas
-  const isAuthenticated = !!tokenStorage.getToken().token && !tokenStorage.isTokenExpired();
+  const isAuthenticated = !!secureTokenStorage.getAccessToken() && !secureTokenStorage.isTokenExpired();
 
   // Atnaujina autentifikacijos būseną gavus naują žetoną
   const updateAuthState = useCallback(
     (data: { accessToken: string; userId: string }) => {
       const { accessToken, userId } = data;
       try {
-        tokenStorage.saveTokens({
-          token: accessToken,
-          id: userId,
+        secureTokenStorage.saveTokens({
+          token: accessToken
         });
         queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
       } catch (error) {

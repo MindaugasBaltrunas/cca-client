@@ -12,13 +12,15 @@ import {
   TwoFactorSetupResponse,
   UserData
 } from '../../shared/types/api.types';
-import { clearTokens, getAccessToken, saveTokens } from '../../shared/http';
+import { secureTokenStorage } from '../services/index';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
+
+
   if (response.status === 'success' && response.data) {
     const { accessToken, refreshToken, expiresIn } = response.data;
 
-    await saveTokens({
+    await secureTokenStorage.saveTokens({
       token: accessToken ?? '',
       refreshToken,
       expiresIn
@@ -110,12 +112,12 @@ export const logout = async (userId: string): Promise<AuthResponse> => {
       { userId: safeUserId }
     );
 
-    clearTokens();
+    secureTokenStorage.clear();
     EventBus.emit('auth:logout');
 
     return response.data;
   } catch (error) {
-    clearTokens();
+    secureTokenStorage.clear();
     EventBus.emit('auth:logout');
 
     return handleApiError(error, 'Logout error');
@@ -126,7 +128,7 @@ export const getCurrentUser = async (): Promise<UserData | null> => {
   try {
     logger.debug('Fetching current user data');
 
-    const token = await getAccessToken();
+    const token = await secureTokenStorage.getAccessToken();
     if (!token) {
       logger.debug('No access token found, skipping current user request');
       return null;
@@ -215,7 +217,7 @@ export const verify2FA = async (userId: string, token: string): Promise<IVerify2
     if (response.data.status === 'success' && response.data.data) {
       const { accessToken, refreshToken, expiresIn } = response.data.data;
 
-      await saveTokens({
+      await secureTokenStorage.saveTokens({
         token: accessToken,
         refreshToken,
         expiresIn
@@ -259,6 +261,5 @@ export const authApi = {
   enable2FA,
   disable2FA,
   verify2FA,
-  refreshToken,
-  getAccessToken
+  refreshToken
 }

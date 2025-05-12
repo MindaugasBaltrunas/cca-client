@@ -1,7 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { sanitizeObject } from '../../infrastructure/services/xssGuard';
 import { logger } from '../utils/logger';
-import { clearTokens, getAccessToken } from '../http';
+// Import secureTokenStorage directly
+import { secureTokenStorage } from '../../infrastructure//services/index'; // Adjust path if secureTokenStorage.ts is elsewhere
 
 export const API_CONFIG = {
   BASE_URL: 'http://localhost:8080',
@@ -82,16 +83,24 @@ axiosInstance.interceptors.request.use(
 
       if (!isAuthExemptEndpoint(config.url)) {
         try {
-          const token = await getAccessToken();
+          // Use secureTokenStorage.getAccessToken() directly
+          const token = await secureTokenStorage.getAccessToken();
           if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
           }
         } catch (tokenError) {
-          logger.error('Error retrieving access token:', tokenError);
+          logger.error('Error retrieving access token in interceptor:', tokenError);
+          // Optional: Clear tokens if retrieving fails unexpectedly
+          // secureTokenStorage.clear();
         }
       }
 
+      // Note: Setting config.url to '/api' here might be incorrect depending on
+      // your backend routing. Usually, you'd pass the full path like
+      // `get(API_CONFIG.ENDPOINTS.AUTH.CURRENT_USER)` and the baseURL handles the rest.
+      // Ensure this line is correct for your API gateway setup.
       config.url = '/api';
+
 
       if (config.data && typeof config.data === 'object') {
         config.data = sanitizeRequestData(config.data);
@@ -100,7 +109,8 @@ axiosInstance.interceptors.request.use(
       return config;
     } catch (error) {
       logger.error('Request interceptor error:', error);
-      return config;
+      // Rejecting here prevents the request from being sent
+      return Promise.reject(error);
     }
   },
   (error) => {
@@ -118,7 +128,10 @@ axiosInstance.interceptors.response.use(
   },
   (error) => {
     if (error.response && error.response.status === 401) {
-      clearTokens();
+      // Use secureTokenStorage.clear() directly
+      secureTokenStorage.clear();
+      // Optional: Redirect to login page or show a session expired message
+      // e.g., window.location.href = '/login';
     }
     return Promise.reject(error);
   }
@@ -126,6 +139,8 @@ axiosInstance.interceptors.response.use(
 
 export const get = async <T = any>(endpoint: string, params?: any): Promise<AxiosResponse<T>> => {
   try {
+    // Note: The config.url = '/api' in the interceptor modifies the endpoint.
+    // Ensure this is the intended behavior. If not, remove that line in the interceptor.
     return await axiosInstance.get<T>(endpoint, { params });
   } catch (error) {
     logger.error(`GET ${endpoint} failed:`, error);
@@ -166,5 +181,6 @@ export const apiClient = {
   put,
   delete: del,
   instance: axiosInstance,
-  clearTokens
-}
+  // If you need to expose clearTokens via apiClient, expose the one from secureTokenStorage
+  clearTokens: secureTokenStorage.clear // Correctly reference the method from secureTokenStorage
+};

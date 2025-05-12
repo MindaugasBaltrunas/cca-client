@@ -13,7 +13,7 @@ const TwoFactorAuthSetup: React.FC = () => {
     setHasFetched(true);
     setupTwoFactorAuth()
       .then((response) => {
-        setQrCodeUrl(response.qrCodeUrl);
+        setQrCodeUrl(response.qrCode);
       })
       .catch((err: any) => {
         setError(err.message || "Failed to load QR code");
