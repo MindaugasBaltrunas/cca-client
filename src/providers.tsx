@@ -5,7 +5,6 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { FormikProvider } from "./shared/providers/formik/formikProvider";
 import { PaginationProvider } from "./shared/providers/paginationProvider";
 import { AuthProvider } from "./context/AuthContext";
-import { CspMeta } from "./shared/providers/CspMeta";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,7 +27,6 @@ interface AppProviderProps {
 const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   return (
     <>
-      <CspMeta />
       <QueryClientProvider client={queryClient}>
         <Router>
           <AuthProvider>

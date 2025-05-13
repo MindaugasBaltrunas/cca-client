@@ -39,7 +39,7 @@ export const applyCommonHeaders = (config: InternalAxiosRequestConfig): Internal
     headers: AxiosHeaders.from({
         ...config.headers,
         'Content-Type': config.headers['Content-Type'] || 'application/json',
-        'X-API-Secret': API_CONFIG.SECRET_KEY
+        'X-API-Secret': API_CONFIG.API_SECRET
     })
 });
 

@@ -1,6 +1,6 @@
 import { AuthResponse } from '../../shared/types/api.types';
 import { logger } from '../../shared/utils/logger';
-import { secureTokenStorage } from '../services/index';
+import { secureTokenStorage } from './tokenStorage';
 
 const createTokenRefreshService = () => {
   let isRefreshing = false;

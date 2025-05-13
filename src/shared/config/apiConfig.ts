@@ -1,13 +1,16 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { sanitizeObject } from '../../infrastructure/services/xssGuard';
 import { logger } from '../utils/logger';
-// Import secureTokenStorage directly
-import { secureTokenStorage } from '../../infrastructure//services/index'; // Adjust path if secureTokenStorage.ts is elsewhere
+import { secureTokenStorage } from '../../infrastructure/services/tokenStorage';
+
+const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
+const API_SECRET = process.env.REACT_APP_API_SECRET_KEY || '';
+const API_KEY = process.env.REACT_APP_API_KEY || '';
 
 export const API_CONFIG = {
-  BASE_URL: 'http://localhost:8080',
-  SECRET_KEY: '1234567890abcdefg',
-  API_KEY: '1234567890abcdefg',
+  BASE_URL,
+  API_SECRET,
+  API_KEY,
   REQUEST_TIMEOUT: 5000,
   ENDPOINTS: {
     AUTH: {
@@ -27,12 +30,19 @@ export const API_CONFIG = {
   },
 };
 
+// Create a token refresher handler that can be set later
+let tokenRefresher: ((refreshToken: string) => Promise<any>) | null = null;
+
+export const setTokenRefresher = (refresher: (refreshToken: string) => Promise<any>) => {
+  tokenRefresher = refresher;
+};
+
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: API_CONFIG.BASE_URL,
   timeout: API_CONFIG.REQUEST_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
-    'X-API-Secret': API_CONFIG.SECRET_KEY,
+    'X-API-Secret': API_CONFIG.API_SECRET,
   },
 });
 
@@ -83,24 +93,17 @@ axiosInstance.interceptors.request.use(
 
       if (!isAuthExemptEndpoint(config.url)) {
         try {
-          // Use secureTokenStorage.getAccessToken() directly
           const token = await secureTokenStorage.getAccessToken();
           if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
           }
         } catch (tokenError) {
           logger.error('Error retrieving access token in interceptor:', tokenError);
-          // Optional: Clear tokens if retrieving fails unexpectedly
-          // secureTokenStorage.clear();
         }
       }
 
-      // Note: Setting config.url to '/api' here might be incorrect depending on
-      // your backend routing. Usually, you'd pass the full path like
-      // `get(API_CONFIG.ENDPOINTS.AUTH.CURRENT_USER)` and the baseURL handles the rest.
-      // Ensure this line is correct for your API gateway setup.
-      config.url = '/api';
-
+      // Warning: Make sure this is correct for your API gateway setup
+      // config.url = '/api';
 
       if (config.data && typeof config.data === 'object') {
         config.data = sanitizeRequestData(config.data);
@@ -109,7 +112,6 @@ axiosInstance.interceptors.request.use(
       return config;
     } catch (error) {
       logger.error('Request interceptor error:', error);
-      // Rejecting here prevents the request from being sent
       return Promise.reject(error);
     }
   },
@@ -126,21 +128,45 @@ axiosInstance.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      // Use secureTokenStorage.clear() directly
-      secureTokenStorage.clear();
-      // Optional: Redirect to login page or show a session expired message
-      // e.g., window.location.href = '/login';
+  async (error) => {
+    // Token refresh logic
+    const originalRequest = error.config;
+    
+    if (error.response?.status === 401 && !originalRequest._retry && tokenRefresher) {
+      originalRequest._retry = true;
+      
+      try {
+        const refreshToken = await secureTokenStorage.getRefreshToken();
+        if (refreshToken && tokenRefresher) {
+          const response = await tokenRefresher(refreshToken);
+          
+          if (response && response.data && response.data.accessToken) {
+            await secureTokenStorage.setAccessToken(response.data.accessToken);
+            // Set new token on the original request
+            originalRequest.headers['Authorization'] = `Bearer ${response.data.accessToken}`;
+            // Retry the original request with the new token
+            return axiosInstance(originalRequest);
+          }
+        }
+      } catch (refreshError) {
+        logger.error('Token refresh failed:', refreshError);
+        secureTokenStorage.clear();
+        // Redirect to login or trigger auth event
+        // window.location.href = '/login';
+      }
     }
+    
+    // If refresh failed or not applicable, clear tokens on 401
+    if (error.response?.status === 401) {
+      secureTokenStorage.clear();
+    }
+    
     return Promise.reject(error);
   }
 );
 
 export const get = async <T = any>(endpoint: string, params?: any): Promise<AxiosResponse<T>> => {
   try {
-    // Note: The config.url = '/api' in the interceptor modifies the endpoint.
-    // Ensure this is the intended behavior. If not, remove that line in the interceptor.
     return await axiosInstance.get<T>(endpoint, { params });
   } catch (error) {
     logger.error(`GET ${endpoint} failed:`, error);
@@ -181,6 +207,5 @@ export const apiClient = {
   put,
   delete: del,
   instance: axiosInstance,
-  // If you need to expose clearTokens via apiClient, expose the one from secureTokenStorage
-  clearTokens: secureTokenStorage.clear // Correctly reference the method from secureTokenStorage
+  clearTokens: () => secureTokenStorage.clear() // Use a function reference instead of direct method reference
 };

@@ -2,7 +2,8 @@
 
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authApi, IVerify2FAResponse, LoginState, SignInCredentials, SignUpData, secureTokenStorage } from '../../infrastructure/services';
+import { authApi, IVerify2FAResponse, LoginState, SignInCredentials, SignUpData } from '../../infrastructure/services';
+import { secureTokenStorage } from '../../infrastructure/services/tokenStorage';
 import { queryKeys } from '../../utils/queryKeys';
 
 
