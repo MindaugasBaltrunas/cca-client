@@ -1,11 +1,8 @@
-// src/infrastructure/api/authApi.ts
-
 import { API_CONFIG }                   from '../../shared/config/apiConfig';
 import { http }              from '../../shared/http';
 import { sanitizeString }               from '../services/xssGuard';
 import { logger }                       from '../../shared/utils/logger';
 import { EventBus }                     from '../../shared/utils/eventBus';
-import { secureTokenStorage }           from '../services/tokenStorage';
 
 import type {
   AuthResponse,
@@ -15,17 +12,17 @@ import type {
   TwoFactorSetupResponse,
   UserData
 } from '../../shared/types/api.types';
+import { clearTokens, getAccessToken, saveTokens } from '../services/tokenStorage';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
   logger.debug('Handling successful authentication response', response);
 
   if (response.status === 'success' && response.data) {
-    const { accessToken, refreshToken, expiresIn } = response.data;
+    const { accessToken, refreshToken } = response.data;
 
-    await secureTokenStorage.saveTokens({
+    await saveTokens({
       token:       accessToken ?? '',
-      refreshToken,
-      expiresIn
+      refreshToken
     });
 
     EventBus.emit('auth:login', response);
@@ -98,11 +95,11 @@ export const logout = async (userId: string): Promise<AuthResponse> => {
       API_CONFIG.ENDPOINTS.AUTH.SIGN_OUT,
       { userId: safeUserId }
     );
-    secureTokenStorage.clear();
+    clearTokens();
     EventBus.emit('auth:logout');
     return response.data;
   } catch (error) {
-    secureTokenStorage.clear();
+    clearTokens();
     EventBus.emit('auth:logout');
     return handleApiError(error, 'Logout error');
   }
@@ -111,7 +108,7 @@ export const logout = async (userId: string): Promise<AuthResponse> => {
 export const getCurrentUser = async (): Promise<UserData | null> => {
   try {
     logger.debug('Fetching current user data');
-    const token = await secureTokenStorage.getAccessToken();
+    const token = await getAccessToken();
     if (!token) {
       logger.debug('No access token found, skipping current user request');
       return null;
@@ -189,8 +186,8 @@ export const verify2FA = async (
       }
     );
     if (response.data.status === 'success' && response.data.data) {
-      const { accessToken, refreshToken, expiresIn } = response.data.data;
-      await secureTokenStorage.saveTokens({ token: accessToken, refreshToken, expiresIn });
+      const { accessToken, refreshToken } = response.data.data;
+      await saveTokens({ token: accessToken, refreshToken });
       EventBus.emit('auth:2faVerified', response.data);
     }
     return response.data;

@@ -1,6 +1,6 @@
 import { AuthResponse } from '../../shared/types/api.types';
 import { logger } from '../../shared/utils/logger';
-import { secureTokenStorage } from './tokenStorage';
+import { clearTokens, getRefreshToken, saveTokens } from './tokenStorage';
 
 const createTokenRefreshService = () => {
   let isRefreshing = false;
@@ -19,7 +19,7 @@ const createTokenRefreshService = () => {
     logger.error('Token refresh failed:', error);
     refreshSubscribers.forEach(callback => callback(''));
     refreshSubscribers = [];
-    secureTokenStorage.clear();
+    clearTokens();
   };
 
   const isRefreshInProgress = (): boolean => isRefreshing;
@@ -31,10 +31,10 @@ const createTokenRefreshService = () => {
   const refreshAccessToken = async (
     refreshTokenApi: (token: string) => Promise<AuthResponse>
   ): Promise<AuthResponse> => {
-    const refreshToken = await secureTokenStorage.getRefreshToken();
+    const refreshToken = await getRefreshToken();
     
     if (!refreshToken) {
-      secureTokenStorage.clear();
+      clearTokens();
       throw new Error('No refresh token available');
     }
     
@@ -44,12 +44,11 @@ const createTokenRefreshService = () => {
       const response = await refreshTokenApi(refreshToken);
       
       if (response.status === 'success' && response.data) {
-        const { accessToken, refreshToken: newRefreshToken, expiresIn } = response.data;
+        const { accessToken, refreshToken: newRefreshToken } = response.data;
         
-        await secureTokenStorage.saveTokens({
+        await saveTokens({
           token: accessToken as string,
-          refreshToken: newRefreshToken,
-          expiresIn
+          refreshToken: newRefreshToken
         });
         
         if (accessToken) {

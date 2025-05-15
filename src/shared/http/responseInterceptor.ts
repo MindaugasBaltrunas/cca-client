@@ -1,11 +1,11 @@
 import { AxiosError, AxiosHeaders, AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { sanitizeObject } from '../../infrastructure/services/xssGuard';
-import * as tokenStorage from '../../infrastructure/services/tokenStorage';
 import { tokenRefreshService } from '../../infrastructure/services/tokenRefreshService';
 import { logger } from '../utils/logger';
 import { EventBus } from '../utils/eventBus';
 import { API_CONFIG } from '../config/apiConfig';
 import { AuthResponse } from '../../shared/types/api.types';
+import { clearTokens } from '../../infrastructure/services/tokenStorage';
 
 interface ExtendedRequestConfig extends InternalAxiosRequestConfig {
     _retry?: boolean;
@@ -47,7 +47,7 @@ const retryRequestWithNewToken = (
 };
 
 const handleAuthFailure = (): void => {
-    tokenStorage.secureTokenStorage.clear();
+    clearTokens();
 
     EventBus.emit('auth:sessionExpired');
 

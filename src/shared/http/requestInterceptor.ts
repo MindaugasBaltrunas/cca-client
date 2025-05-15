@@ -2,7 +2,7 @@ import { AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
 import { API_CONFIG } from '../config/apiConfig';
 import { sanitizeRequestData } from '../../infrastructure/services/sanitizationService';
 import { logger } from '../utils/logger';
-import { secureTokenStorage } from '../../infrastructure/services/tokenStorage';
+import { getAccessToken } from '../../infrastructure/services/tokenStorage';
 
 const AUTH_EXEMPT_ENDPOINTS = [
     API_CONFIG.ENDPOINTS.AUTH.SIGN_IN,
@@ -52,7 +52,7 @@ export const applyAuthHeaders = async (
     }
 
     try {
-        const token = await secureTokenStorage.getAccessToken();
+        const token = await getAccessToken();
         
         if (token) {
             logger.debug(`Adding auth header for endpoint: ${config.url}`);

@@ -4,7 +4,7 @@ import { requestInterceptor, requestErrorHandler } from './requestInterceptor';
 import { responseSuccessHandler } from './responseInterceptor';
 import { logger } from '../utils/logger';
 import { tokenRefreshService } from '../../infrastructure/services/tokenRefreshService';
-import { secureTokenStorage } from '../../infrastructure/services/tokenStorage';
+import { getAccessToken } from '../../infrastructure/services/tokenStorage';
 
 // Remove refreshToken parameter - we'll use tokenRefreshService instead
 export const createHttpClient = (): AxiosInstance => {
@@ -54,7 +54,7 @@ export const createHttpClient = (): AxiosInstance => {
             await tokenRefreshService.refreshAccessToken(refreshTokenApi);
             
             // Get the fresh token 
-            const newToken = await secureTokenStorage.getAccessToken();
+            const newToken = await getAccessToken();
             if (newToken) {
               originalRequest.headers['Authorization'] = `Bearer ${newToken}`;
               return instance(originalRequest);

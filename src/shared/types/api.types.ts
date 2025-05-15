@@ -26,7 +26,6 @@ export interface UserData {
   lastName?: string;
   isAdmin?: boolean;
   hasTwoFactorEnabled?: boolean;
-  [key: string]: any;
 }
 
 export interface AuthResponse {
@@ -37,7 +36,6 @@ export interface AuthResponse {
     refreshToken?: string;
     userId?: string;
     expiresAt?: number;
-    [key: string]: any;
   };
 }
 
@@ -46,7 +44,6 @@ export interface IVerify2FAResponse {
   status: string;
   data: {
     id: string;
-    [key: string]: any;
   };
 }
 

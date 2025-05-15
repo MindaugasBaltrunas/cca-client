@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
 import { sanitizeObject } from '../../infrastructure/services/xssGuard';
 import { logger } from '../utils/logger';
-import { secureTokenStorage } from '../../infrastructure/services/tokenStorage';
+import { clearTokens, getAccessToken, getRefreshToken, setAccessToken } from '../../infrastructure/services/tokenStorage';
 
 const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
 const API_SECRET = process.env.REACT_APP_API_SECRET_KEY || '';
@@ -93,7 +93,7 @@ axiosInstance.interceptors.request.use(
 
       if (!isAuthExemptEndpoint(config.url)) {
         try {
-          const token = await secureTokenStorage.getAccessToken();
+          const token = await getAccessToken();
           if (token) {
             config.headers['Authorization'] = `Bearer ${token}`;
           }
@@ -101,9 +101,6 @@ axiosInstance.interceptors.request.use(
           logger.error('Error retrieving access token in interceptor:', tokenError);
         }
       }
-
-      // Warning: Make sure this is correct for your API gateway setup
-      // config.url = '/api';
 
       if (config.data && typeof config.data === 'object') {
         config.data = sanitizeRequestData(config.data);
@@ -136,12 +133,12 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
       
       try {
-        const refreshToken = await secureTokenStorage.getRefreshToken();
+        const refreshToken = await getRefreshToken();
         if (refreshToken && tokenRefresher) {
           const response = await tokenRefresher(refreshToken);
           
           if (response && response.data && response.data.accessToken) {
-            await secureTokenStorage.setAccessToken(response.data.accessToken);
+            await setAccessToken(response.data.accessToken);
             // Set new token on the original request
             originalRequest.headers['Authorization'] = `Bearer ${response.data.accessToken}`;
             // Retry the original request with the new token
@@ -150,7 +147,7 @@ axiosInstance.interceptors.response.use(
         }
       } catch (refreshError) {
         logger.error('Token refresh failed:', refreshError);
-        secureTokenStorage.clear();
+        clearTokens();
         // Redirect to login or trigger auth event
         // window.location.href = '/login';
       }
@@ -158,7 +155,7 @@ axiosInstance.interceptors.response.use(
     
     // If refresh failed or not applicable, clear tokens on 401
     if (error.response?.status === 401) {
-      secureTokenStorage.clear();
+      clearTokens();
     }
     
     return Promise.reject(error);
@@ -207,5 +204,5 @@ export const apiClient = {
   put,
   delete: del,
   instance: axiosInstance,
-  clearTokens: () => secureTokenStorage.clear() // Use a function reference instead of direct method reference
+  clearTokens: () => clearTokens() // Use a function reference instead of direct method reference
 };

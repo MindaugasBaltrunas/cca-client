@@ -10,8 +10,8 @@ export const useAuth = () => {
 
   if (!context) {
     throw new Error(
-      "useAuth turi būti naudojamas AuthProvider viduje. " +
-        "Įsitikinkite, kad komponentas yra apgaubtas AuthProvider"
+      "useAuth must be used within an AuthProvider. " +
+        "Make sure the component is wrapped in an AuthProvider."
     );
   }
 
