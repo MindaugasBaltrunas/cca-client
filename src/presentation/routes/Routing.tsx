@@ -50,6 +50,7 @@ const Routing = (): JSX.Element => {
             </Layout>
           }
         />
+        
 
         {/* Catch-all route for undefined paths */}
         <Route path="*" element={<Navigate to="/login" replace />} />

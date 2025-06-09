@@ -1,10 +1,3 @@
-// api.types.ts - API tipų apibrėžimai
-
-export interface SignInCredentials {
-  email: string;
-  password: string;
-  twoFactorCode?: string;
-}
 
 export interface SignUpData {
   email: string;
@@ -15,8 +8,8 @@ export interface SignUpData {
 }
 
 export interface LoginState {
-  userId: string;
-  credentials: SignInCredentials;
+  email: string;
+  password: string;
 }
 
 export interface UserData {

@@ -47,7 +47,6 @@ export const applyAuthHeaders = async (
     config: InternalAxiosRequestConfig
 ): Promise<InternalAxiosRequestConfig> => {
     if (config.url && matchesEndpoint(config.url, AUTH_EXEMPT_ENDPOINTS)) {
-        logger.debug(`Skipping auth header for exempt endpoint: ${config.url}`);
         return config;
     }
 
@@ -55,7 +54,6 @@ export const applyAuthHeaders = async (
         const token = await getAccessToken();
         
         if (token) {
-            logger.debug(`Adding auth header for endpoint: ${config.url}`);
             return {
                 ...config,
                 headers: AxiosHeaders.from({
@@ -80,7 +78,6 @@ export const applyEndpointSpecificHeaders = (config: InternalAxiosRequestConfig)
     }
     
     if (config.url && matchesEndpoint(config.url, API_KEY_REQUIRED_ENDPOINTS)) {
-        logger.debug(`Adding API key for secure endpoint: ${config.url}`);
         updatedHeaders['X-API-Key'] = API_CONFIG.API_KEY;
     }
     
@@ -102,14 +99,18 @@ export const sanitizeRequest = (config: InternalAxiosRequestConfig): InternalAxi
 };
 
 export const standardizeApiUrl = (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+    const originalUrl = config.url;
+    
     const configWithOriginalEndpoint = {
         ...config,
-        originalEndpoint: config.url
+        originalEndpoint: originalUrl
     };
+    
+    const apiUrl = '/api';
     
     return {
         ...configWithOriginalEndpoint,
-        url: '/api'
+        url: apiUrl
     };
 };
 
@@ -141,7 +142,7 @@ export const requestInterceptor = async (
         ])(config);
         
         (processedConfig as any).requestId = requestId;
-        
+           
         return processedConfig;
     } catch (error) {
         logger.error('Request interceptor error:', error);

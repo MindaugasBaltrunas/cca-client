@@ -1,4 +1,5 @@
 import React, { createContext, useContext } from "react";
+
 import { useAuthentication } from "../core/hooks/useAuthentication";
 
 type AuthContextValue = ReturnType<typeof useAuthentication>;

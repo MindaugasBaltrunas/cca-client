@@ -1,14 +1,15 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authApi, IVerify2FAResponse, LoginState, SignInCredentials, SignUpData } from '../../infrastructure/services';
-import { queryKeys } from '../../utils/queryKeys';
+
+import { authApi, IVerify2FAResponse, LoginState, SignUpData } from '../../infrastructure/services';
 import { getAccessToken, isTokenExpired, saveTokens } from '../../infrastructure/services/tokenStorage';
+import { queryKeys } from '../../utils/queryKeys';
 
 export const useAuthentication = () => {
   const queryClient = useQueryClient();
-  const [twoFactorLoginState, setTwoFactorLoginState] = useState<LoginState | null>(null);
+  const [twoFactorLoginState, setTwoFactorLoginState] = useState<{ userId: string; accessToken: string } | null>(null);
 
-  const isAuthenticated = !! getAccessToken() && ! isTokenExpired();
+  const isAuthenticated = !!getAccessToken() && !isTokenExpired();
 
   const updateAuthState = useCallback(
     (data: { accessToken: string; userId: string }) => {
@@ -27,11 +28,11 @@ export const useAuthentication = () => {
   );
 
   const handleTwoFactorRequired = useCallback(
-    (data: { userId?: string; accessToken?: string }, credentials?: SignInCredentials) => {
+    (data: { userId?: string; accessToken?: string }) => {
       if (data?.accessToken && data?.userId) {
         setTwoFactorLoginState({
+          accessToken: data.accessToken, 
           userId: data.userId,
-          credentials: credentials || { email: '', password: '' },
         });
       }
     },
@@ -42,18 +43,25 @@ export const useAuthentication = () => {
     queryKey: queryKeys.auth.user,
     queryFn: authApi.getCurrentUser,
     enabled: isAuthenticated,
-    refetchInterval: 30 * 60 * 1000, // Atnaujina kas 30 minučių
+    refetchInterval: 30 * 60 * 1000, // Refresh every 30 minutes
     retry: 1,
-    staleTime: 5 * 60 * 1000, // 5 minutės
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
-    onSuccess: (response, variables) => {
+    onSuccess: (response) => {
       try {
         if (response?.status === 'pending') {
-          handleTwoFactorRequired(response.data || {}, variables);
+          handleTwoFactorRequired(response.data || {});
           return;
+        }
+        
+        if (response?.status === 'success' && response.data?.accessToken && response.data?.userId) {
+          updateAuthState({
+            accessToken: response.data.accessToken,
+            userId: response.data.userId,
+          });
         }
       } catch (error) {
         console.error('Error in login success handler:', error);
@@ -63,6 +71,14 @@ export const useAuthentication = () => {
 
   const registerMutation = useMutation({
     mutationFn: authApi.register,
+    onSuccess: (response) => {
+      if (response?.data?.accessToken && response?.data?.userId) {
+        updateAuthState({
+          accessToken: response.data.accessToken,
+          userId: response.data.userId,
+        });
+      }
+    },
   });
 
   const verify2FAMutation = useMutation({
@@ -85,8 +101,23 @@ export const useAuthentication = () => {
     mutationFn: authApi.setup2FA,
   });
 
+  const logout = useCallback(() => {
+    try {
+      // Clear tokens
+      saveTokens({ token: '', id: '' });
+      
+      // Clear 2FA state
+      setTwoFactorLoginState(null);
+      
+      // Clear all cached data
+      queryClient.clear();
+    } catch (error) {
+      console.error('Error during logout:', error);
+    }
+  }, [queryClient]);
+
   const signIn = useCallback(
-    (credentials: SignInCredentials) => loginMutation.mutateAsync(credentials),
+    (credentials: LoginState) => loginMutation.mutateAsync(credentials),
     [loginMutation]
   );
 
@@ -105,39 +136,65 @@ export const useAuthentication = () => {
     [setup2FAMutation]
   );
 
-  const mutations = [
-    loginMutation,
-    registerMutation,
-  ];
+  const mutations = useMemo(
+    () => [
+      loginMutation,
+      registerMutation,
+      verify2FAMutation,
+      setup2FAMutation,
+    ],
+    [loginMutation, registerMutation, verify2FAMutation, setup2FAMutation]
+  );
 
   const isLoading =
     userQuery.isLoading || mutations.some((mutation) => mutation.isPending);
 
   const error = userQuery.error || mutations.find((mutation) => mutation.error)?.error;
 
+  // Add helper for clearing errors
+  const clearErrors = useCallback(() => {
+    mutations.forEach(mutation => mutation.reset());
+  }, [mutations]);
+
   return useMemo(
     () => ({
+      // Actions
       signIn,
       signUp,
       verifyTwoFactorAuth,
       setupTwoFactorAuth,
+      logout,
+      clearErrors,
 
+      // State
       user: userQuery.data,
       twoFactorLoginState,
       isAuthenticated,
       isLoading,
       error,
+      
+      // Individual mutation states for granular control
+      loginError: loginMutation.error,
+      registerError: registerMutation.error,
+      verify2FAError: verify2FAMutation.error,
+      setup2FAError: setup2FAMutation.error,
     }),
     [
       signIn,
       signUp,
       verifyTwoFactorAuth,
       setupTwoFactorAuth,
+      logout,
+      clearErrors,
       userQuery.data,
       twoFactorLoginState,
       isAuthenticated,
       isLoading,
       error,
+      loginMutation.error,
+      registerMutation.error,
+      verify2FAMutation.error,
+      setup2FAMutation.error,
     ]
   );
 };

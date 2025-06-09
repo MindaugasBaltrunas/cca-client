@@ -7,7 +7,7 @@ import { EventBus }                     from '../../shared/utils/eventBus';
 import type {
   AuthResponse,
   IVerify2FAResponse,
-  SignInCredentials,
+  LoginState,
   SignUpData,
   TwoFactorSetupResponse,
   UserData
@@ -37,7 +37,7 @@ const handleApiError = (error: unknown, context: string): AuthResponse => {
   };
 };
 
-export const login = async (credentials: SignInCredentials): Promise<AuthResponse> => {
+export const login = async (credentials: LoginState): Promise<AuthResponse> => {
   try {
     logger.debug('Attempting user login');
     const response = await http.post(
@@ -52,7 +52,7 @@ export const login = async (credentials: SignInCredentials): Promise<AuthRespons
 };
 
 export const adminLogin = async (
-  credentials: SignInCredentials & { adminPassword: string }
+  credentials: LoginState & { adminPassword: string }
 ): Promise<AuthResponse> => {
   try {
     logger.debug('Attempting admin login');

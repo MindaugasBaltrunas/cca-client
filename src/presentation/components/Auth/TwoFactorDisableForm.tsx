@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useAuth } from "../../../context/AuthContext"; // Patikslinkite kelią pagal jūsų projekto struktūrą
+import { useAuth } from "../../../context/AuthContext"; 
 
 const TwoFactorDisableForm: React.FC = () => {
   const { error, isLoading, user, setupTwoFactorAuth } = useAuth();
   const [verificationCode, setVerificationCode] = useState("");
   const [disableComplete, setDisableComplete] = useState(false);
 
-  // Redirect if user doesn't have 2FA enabled
   if (user && !setupTwoFactorAuth) {
     return (
       <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md text-center">
@@ -27,7 +26,6 @@ const TwoFactorDisableForm: React.FC = () => {
     try {
       setDisableComplete(true);
     } catch (err) {
-      // Error is handled in useAuth hook
       console.error("Failed to disable 2FA:", err);
     }
   };

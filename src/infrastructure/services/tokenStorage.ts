@@ -89,7 +89,7 @@ function secureRemove(key: string): void {
 export const setId = (id: string) => secureSet(ID_KEY, id);
 export const getId = () => secureGet(ID_KEY);
 export const setAccessToken = (t: string) => secureSet(ACCESS_TOKEN_KEY, t);
-export const getAccessToken = () => secureGet(ACCESS_TOKEN_KEY);
+export const getAccessToken = async () => secureGet(ACCESS_TOKEN_KEY);
 export const setRefreshToken = (t: string) => secureSet(REFRESH_TOKEN_KEY, t);
 export const getRefreshToken = () => secureGet(REFRESH_TOKEN_KEY);
 export const setTokenExpiry = (ms: number) => secureSet(TOKEN_EXPIRY_KEY, ms);

@@ -12,7 +12,6 @@ export {
 } from './xssGuard';
 
 export type {
-  SignInCredentials,
   SignUpData,
   LoginState,
   UserData,

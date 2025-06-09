@@ -92,7 +92,7 @@ export const LoginForm: React.FC = () => {
                 </div>
                 
                 <div className={styles.links}>
-                  <NavLink to="/forgot-password">Forgot Password?</NavLink>
+                  <NavLink to="/verify-2fa">Forgot Password?</NavLink>
                 </div>
               </Form>
             )}

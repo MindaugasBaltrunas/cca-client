@@ -1,24 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useAuth } from "../../../context/AuthContext";
+import { useAccessToken } from "../../../core/hooks/useAccessToken";
 
 const TwoFactorAuthSetup: React.FC = () => {
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [showManualEntry, setShowManualEntry] = useState(false);
-  const [hasFetched, setHasFetched] = useState(false);
+  const hasInitialized = useRef(false);
 
   const { setupTwoFactorAuth, twoFactorLoginState } = useAuth();
+  const { token, fetchToken } = useAccessToken();
 
-  if (!hasFetched) {
-    setHasFetched(true);
-    setupTwoFactorAuth()
-      .then((response) => {
-        setQrCodeUrl(response.qrCode);
-      })
-      .catch((err: any) => {
-        setError(err.message || "Failed to load QR code");
-      });
+  if (!hasInitialized.current) {
+    hasInitialized.current = true;
+    
+    // Fetch token first, then setup 2FA
+    fetchToken().then(() => {
+      return setupTwoFactorAuth();
+    }).then((response) => {
+      setQrCodeUrl(response.qrCode);
+    }).catch((err: any) => {
+      setError(err.message || "Failed to load QR code");
+    });
   }
+
+  console.log("TwoFactorAuthSetup - token:", token);
+  console.log("TwoFactorAuthSetup - twoFactorLoginState:", twoFactorLoginState);
 
   return (
     <div className="two-factor-auth-setup">
@@ -29,9 +36,7 @@ const TwoFactorAuthSetup: React.FC = () => {
       <div className="setup-instructions">
         <p>Follow these steps to enable two-factor authentication:</p>
         <ol>
-          <li>
-            Install an authenticator app (Google Authenticator, Authy, etc.)
-          </li>
+          <li>Install an authenticator app (Google Authenticator, Authy, etc.)</li>
           <li>Scan the QR code below</li>
           <li>Enter the 6-digit code when asked</li>
         </ol>
