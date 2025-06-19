@@ -41,8 +41,7 @@ export interface IVerify2FAResponse {
 }
 
 export interface TwoFactorSetupResponse {
-  qrCode: string;
-  secret: string;
+  qrCodeUrl: string;
 }
 
 export interface ApiError {

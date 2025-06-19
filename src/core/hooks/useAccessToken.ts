@@ -1,22 +1,15 @@
-import { useCallback, useState } from "react";
-
+import { useCallback } from "react";
 import { getAccessToken } from "../../infrastructure/services/tokenStorage";
 
 export const useAccessToken = () => {
-  const [token, setToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const fetchToken = useCallback(async () => {
-    if (loading) return;
-    
-    setLoading(true);
+  const fetchToken = useCallback(async (): Promise<string | null> => {
     try {
       const accessToken = await getAccessToken();
-      setToken(accessToken);
-    } finally {
-      setLoading(false);
+      return accessToken || null;
+    } catch {
+      return null;
     }
-  }, [loading]);
+  }, []);
 
-  return { token, fetchToken, loading };
+  return { fetchToken };
 };

@@ -35,8 +35,11 @@ export const LoginForm: React.FC = () => {
   ) => {
     try {
       const response = await signIn(values);
-      
-      console.log("Login response:", response);
+
+      if (response.status === "success") {
+        console.log("Login successful.");
+        navigate('/2fa-setup');
+      }
       
       if (response.status === "pending") {
         console.log("Two-factor authentication required.");
