@@ -59,6 +59,7 @@ const TwoFactorAuthSetup: React.FC = () => {
       // const result = await verifyTwoFactorSetup(values.verificationCode);
       console.log("Verifying code:", values.verificationCode);
       
+      
       // Simulate API call
       await new Promise(resolve => setTimeout(resolve, 1000));
       

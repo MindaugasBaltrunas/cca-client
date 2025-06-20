@@ -156,7 +156,7 @@ const process2FAOperation = async (
   }
 };
 
-export const enable2FA = (token: string) =>
+export const enable2FA = (token: string): Promise<AuthResponse> =>
   process2FAOperation(
     token,
     API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.ENABLE,
