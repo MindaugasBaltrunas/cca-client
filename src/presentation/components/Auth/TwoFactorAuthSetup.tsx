@@ -1,34 +1,37 @@
 import React, { useState } from "react";
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
 import { useAuth } from "../../../context/AuthContext";
 import { useAccessToken } from "../../../core/hooks/useAccessToken";
 import { logger } from "../../../shared/utils/logger";
 import FormInput from "../InputFields/FormInput";
+import { useNavigate } from "react-router";
 
 interface TwoFactorFormValues {
   verificationCode: string;
 }
 
 const TwoFactorAuthSetup: React.FC = () => {
+  const navigate = useNavigate();
+
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [started, setStarted] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);
 
-  const { setupTwoFactorAuth } = useAuth();
+  const { setupTwoFactorAuth, enableTwoFactorAuth } = useAuth();
   const { fetchToken } = useAccessToken();
 
   // Validation schema for the verification code
   const validationSchema = Yup.object({
     verificationCode: Yup.string()
-      .matches(/^\d{6}$/, 'Must be exactly 6 digits')
-      .required('Verification code is required')
+      .matches(/^\d{6}$/, "Must be exactly 6 digits")
+      .required("Verification code is required"),
   });
 
   // Initial form values
   const initialValues: TwoFactorFormValues = {
-    verificationCode: ''
+    verificationCode: "",
   };
 
   if (!started) {
@@ -50,29 +53,29 @@ const TwoFactorAuthSetup: React.FC = () => {
     })();
   }
 
-  const handleSubmit = async (values: TwoFactorFormValues, { setFieldError, resetForm }: any) => {
+  const handleSubmit = async (
+    values: TwoFactorFormValues,
+    { setFieldError, resetForm }: any
+  ) => {
     setIsVerifying(true);
     setError(null);
 
     try {
-      // Replace this with your actual verification API call
-      // const result = await verifyTwoFactorSetup(values.verificationCode);
-      console.log("Verifying code:", values.verificationCode);
+      const response = await enableTwoFactorAuth(values.verificationCode);
+      console.log("2FA verification response:", response);
       
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Handle successful verification
-      alert("Two-factor authentication setup completed successfully!");
-      resetForm();
-      
+      if (response.status === "success") {
+        navigate("/login");
+      }
     } catch (err: any) {
       logger.error("2FA verification error", err);
-      
+
       // Set error on the specific field
-      if (err.message?.includes('invalid') || err.message?.includes('code')) {
-        setFieldError('verificationCode', 'Invalid verification code. Please try again.');
+      if (err.message?.includes("invalid") || err.message?.includes("code")) {
+        setFieldError(
+          "verificationCode",
+          "Invalid verification code. Please try again."
+        );
       } else {
         setError(err.message || "Verification failed. Please try again.");
       }
@@ -104,7 +107,9 @@ const TwoFactorAuthSetup: React.FC = () => {
       {!error && qrCodeUrl && (
         <>
           <ol>
-            <li>Install an authenticator app (Google Authenticator, Authy, etc.)</li>
+            <li>
+              Install an authenticator app (Google Authenticator, Authy, etc.)
+            </li>
             <li>Scan the QR code below or enter the manual key</li>
             <li>Enter the 6-digit code from your authenticator app</li>
           </ol>
@@ -160,22 +165,32 @@ const TwoFactorAuthSetup: React.FC = () => {
                     autoComplete="one-time-code"
                   />
                 </div>
-                
+
                 <button
                   type="submit"
-                  disabled={!isValid || values.verificationCode.length !== 6 || isVerifying}
+                  disabled={
+                    !isValid ||
+                    values.verificationCode.length !== 6 ||
+                    isVerifying
+                  }
                   style={{
                     padding: "10px 20px",
-                    backgroundColor: isValid && values.verificationCode.length === 6 ? "#007bff" : "#ccc",
+                    backgroundColor:
+                      isValid && values.verificationCode.length === 6
+                        ? "#007bff"
+                        : "#ccc",
                     color: "white",
                     border: "none",
                     borderRadius: "4px",
-                    cursor: isValid && values.verificationCode.length === 6 ? "pointer" : "not-allowed",
+                    cursor:
+                      isValid && values.verificationCode.length === 6
+                        ? "pointer"
+                        : "not-allowed",
                   }}
                 >
                   {isVerifying ? "Verifying..." : "Verify Code"}
                 </button>
-                
+
                 {isVerifying && (
                   <div style={{ marginTop: "10px", color: "#666" }}>
                     Verifying your code...

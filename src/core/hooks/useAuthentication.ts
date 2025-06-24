@@ -2,56 +2,87 @@ import { useState, useCallback, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 import { authApi, IVerify2FAResponse, LoginState, SignUpData } from '../../infrastructure/services';
-import { getAccessToken, isTokenExpired, saveTokens } from '../../infrastructure/services/tokenStorage';
+import { getAccessToken, isTokenExpired, saveTokens, getId } from '../../infrastructure/services/tokenStorage';
 import { queryKeys } from '../../utils/queryKeys';
+import { logger } from '../../shared/utils/logger';
 
 interface TwoFactorState {
   userId: string;
   accessToken: string;
 }
 
+interface AuthState {
+  accessToken?: string;
+  userId: string;
+}
+
 export const useAuthentication = () => {
   const queryClient = useQueryClient();
-  const [twoFactorLoginState, setTwoFactorLoginState] = useState<TwoFactorState | null>(null);
+  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
+  const [twoFactorUserId, setTwoFactorUserId] = useState<string | null>(null);
+  const [authStateVersion, setAuthStateVersion] = useState(0);
 
   const isAuthenticated = useMemo(() => {
     const token = getAccessToken();
     return !!token && !isTokenExpired();
-  }, []);
+  }, [authStateVersion]);
+  const [isInTwoFactorFlow, setIsInTwoFactorFlow] = useState(false);
+
+  useMemo(() => {
+    // User is in 2FA flow if they have a userId but no valid token
+    const checkTwoFactorFlow = async () => {
+      const token = getAccessToken();
+      const userId = getId() || twoFactorUserId;
+
+      setIsInTwoFactorFlow(!!userId && (!token || (await isTokenExpired())) && requiresTwoFactor);
+    };
+    checkTwoFactorFlow();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [requiresTwoFactor, twoFactorUserId]);
 
   const updateAuthState = useCallback(
-    (data: { accessToken: string; userId: string }) => {
+    (data: AuthState) => {
+      // Save tokens based on what we have
       saveTokens({
-        token: data.accessToken,
+        token: data.accessToken || '',
         id: data.userId
       });
-      queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
+
+      // If we have a full token, clear 2FA state
+      if (data.accessToken) {
+        setRequiresTwoFactor(false);
+        setTwoFactorUserId(null);
+        setAuthStateVersion(prev => prev + 1);
+        queryClient.invalidateQueries({ queryKey: queryKeys.auth.user });
+      } else {
+        // Partial auth state - store userId for 2FA
+        setTwoFactorUserId(data.userId);
+      }
     },
     [queryClient]
   );
 
-  const handleTwoFactorRequired = useCallback(
-    (data: { userId?: string; accessToken?: string }) => {
-      if (data?.accessToken && data?.userId) {
-        setTwoFactorLoginState({
-          accessToken: data.accessToken,
-          userId: data.userId,
-        });
-      }
-    },
-    []
-  );
+  const enterTwoFactorFlow = useCallback((userId: string) => {
+    setRequiresTwoFactor(true);
+    setTwoFactorUserId(userId);
+    // Store userId temporarily but don't set full auth state
+    saveTokens({
+      token: '',
+      id: userId
+    });
+  }, []);
 
   const clearAuthState = useCallback(() => {
     saveTokens({ token: '', id: '' });
-    setTwoFactorLoginState(null);
+    setRequiresTwoFactor(false);
+    setTwoFactorUserId(null);
     queryClient.clear();
   }, [queryClient]);
 
   const userQuery = useQuery({
     queryKey: queryKeys.auth.user,
     queryFn: authApi.getCurrentUser,
-    enabled: isAuthenticated,
+    enabled: isAuthenticated, // Only fetch when fully authenticated
     refetchInterval: 30 * 60 * 1000,
     retry: 1,
     staleTime: 5 * 60 * 1000,
@@ -60,18 +91,49 @@ export const useAuthentication = () => {
   const loginMutation = useMutation({
     mutationFn: authApi.login,
     onSuccess: (response) => {
-      if (response?.status === 'pending') {
-        handleTwoFactorRequired(response.data || {});
+      logger.debug('Login response:', response);
+
+      const { data, status } = response || {};
+      if (!data?.userId) {
+        logger.error('Invalid login response: missing userId');
         return;
       }
 
-      if (response?.status === 'success' && response.data?.accessToken && response.data?.userId) {
-        updateAuthState({
-          accessToken: response.data.accessToken,
-          userId: response.data.userId,
-        });
+      switch (status) {
+        case 'pending':
+          // 2FA required - store userId but don't set full auth
+          logger.debug('2FA required for user:', data.userId);
+          enterTwoFactorFlow(data.userId);
+          break;
+
+        case 'success':
+          // Full authentication successful
+          logger.debug('Login successful for user:', data.userId);
+          if (data.accessToken) {
+            updateAuthState({
+              accessToken: data.accessToken,
+              userId: data.userId,
+            });
+          } else {
+            logger.error('Login successful but missing accessToken');
+          }
+          break;
+
+        default:
+          logger.warn('Unexpected login status:', status);
+          // Handle as error or fall back to checking for accessToken
+          if (data.accessToken) {
+            updateAuthState({
+              accessToken: data.accessToken,
+              userId: data.userId,
+            });
+          }
       }
     },
+    onError: (error) => {
+      logger.error('Login failed:', error);
+      clearAuthState();
+    }
   });
 
   const registerMutation = useMutation({
@@ -94,7 +156,6 @@ export const useAuthentication = () => {
         accessToken: response.token,
         userId: response.data.id,
       });
-      setTwoFactorLoginState(null);
     },
   });
 
@@ -149,15 +210,22 @@ export const useAuthentication = () => {
     mutations.forEach(mutation => mutation.reset());
   }, [mutations]);
 
+  // Helper to get current user ID (for 2FA flow)
+  const getCurrentUserId = useCallback(() => {
+    return getId() || twoFactorUserId;
+  }, [twoFactorUserId]);
+
   return {
     // User state
     user: userQuery.data,
     isAuthenticated,
+    isInTwoFactorFlow,
+    requiresTwoFactor,
     isLoading,
     error,
 
-    // Two-factor state
-    twoFactorLoginState,
+    // Helper functions
+    getCurrentUserId,
 
     // Actions
     signIn,
@@ -167,6 +235,10 @@ export const useAuthentication = () => {
     enableTwoFactorAuth,
     logout,
     clearErrors,
+
+    // Additional actions for 2FA flow
+    enterTwoFactorFlow,
+    clearAuthState,
 
     // Individual errors
     loginError: loginMutation.error,
