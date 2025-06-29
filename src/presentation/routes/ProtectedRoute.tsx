@@ -7,9 +7,9 @@ import useTokenCheck from "../../core/hooks/useTokenCheck";
 
 // Shared auth-check hook
 const useAuthStatus = () => {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated } = useAuth();
   const tokenValid = useTokenCheck();
-  const isReady = !isLoading && tokenValid !== null;
+  const isReady =  tokenValid !== null;
   const isLoggedIn = isAuthenticated || tokenValid;
 
   return { isReady, isLoggedIn, tokenValid };

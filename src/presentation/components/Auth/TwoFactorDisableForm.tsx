@@ -2,11 +2,11 @@ import React, { useState } from "react";
 import { useAuth } from "../../../context/AuthContext"; 
 
 const TwoFactorDisableForm: React.FC = () => {
-  const { error, isLoading, user, setupTwoFactorAuth } = useAuth();
+  const {  setupTwoFactorAuth } = useAuth();
   const [verificationCode, setVerificationCode] = useState("");
   const [disableComplete, setDisableComplete] = useState(false);
 
-  if (user && !setupTwoFactorAuth) {
+  if ( !setupTwoFactorAuth) {
     return (
       <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md text-center">
         <h2 className="text-2xl font-bold mb-4">
@@ -57,11 +57,11 @@ const TwoFactorDisableForm: React.FC = () => {
         This will remove the extra layer of security from your account
       </p>
 
-      {error && (
+      {/* {error && (
         <div className="mb-4 p-3 bg-red-100 text-red-700 rounded">
           {error instanceof Error ? error.message : String(error)}
         </div>
-      )}
+      )} */}
 
       <div className="mb-4 p-3 bg-yellow-100 text-yellow-800 rounded">
         <p className="font-medium">Warning</p>
@@ -102,10 +102,10 @@ const TwoFactorDisableForm: React.FC = () => {
         <div className="flex justify-center">
           <button
             type="submit"
-            disabled={isLoading || verificationCode.length !== 6}
+            disabled={ verificationCode.length !== 6}
             className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 focus:outline-none focus:ring focus:ring-red-300 disabled:opacity-50"
           >
-            {isLoading ? "Processing..." : "Disable Two-Factor Authentication"}
+            {/* {isLoading ? "Processing..." : "Disable Two-Factor Authentication"} */}
           </button>
         </div>
       </form>

@@ -4,7 +4,7 @@ import Preloader from "../components/Preloader/preloader";
 import Layout from "../components/Layout/Layout";
 import Dashboard from "../pages/dashboard/dashboard";
 import LoginForm from "../pages/loginPage/LoginPage";
-import TwoFactorAuthSetup from "../components/Auth/TwoFactorAuthSetup";
+import TwoFactorAuthSetup from "../components/Auth/TwoFactorAuthSetup/TwoFactorAuthSetup";
 import TwoFactorVerifyForm from "../components/Auth/TwoFactorVerifyForm/TwoFactorVerifyForm";
 import ProtectedRoute from "./ProtectedRoute";
 import { TwoFactorRoute } from "./ProtectedRoute";

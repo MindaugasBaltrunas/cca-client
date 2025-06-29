@@ -7,11 +7,7 @@ import { useAuth } from "../../../context/AuthContext";
 import FormInput from "../../components/InputFields/FormInput";
 import Preloader from "../../components/Preloader/preloader";
 import styles from "./login.module.scss";
-
-interface LoginValues {
-  email: string;
-  password: string;
-}
+import { LoginState } from "../../../infrastructure/services";
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -20,7 +16,7 @@ const validationSchema = Yup.object({
   password: Yup.string().required("Password is required"),
 });
 
-const initialValues: LoginValues = {
+const initialValues: LoginState = {
   email: "",
   password: "",
 };
@@ -28,23 +24,23 @@ const initialValues: LoginValues = {
 export const LoginForm: React.FC = () => {
   const { signIn, isLoading } = useAuth();
   const navigate = useNavigate();
-  
+
   const handleSubmit = async (
-    values: LoginValues,
-    { setSubmitting, resetForm }: FormikHelpers<LoginValues>
+    values: LoginState,
+    { setSubmitting, resetForm }: FormikHelpers<LoginState>
   ) => {
     try {
       const response = await signIn(values);
 
       if (response.status === "success") {
         console.log("Login successful.");
-        navigate('/2fa-setup');
+        navigate("/2fa-setup");
       }
-      
+
       if (response.status === "pending") {
         console.log("Two-factor authentication required.");
-        
-        navigate('/verify-2fa')
+
+        navigate("/verify-2fa");
       }
     } catch (error) {
       console.error("Login failed:", error);
@@ -56,11 +52,11 @@ export const LoginForm: React.FC = () => {
   return (
     <>
       {isLoading && <Preloader isLoading={isLoading} />}
-      
+
       <div className={styles.container}>
         <div className={styles.auth}>
           <h1>Login</h1>
-          
+
           <Formik
             initialValues={initialValues}
             validationSchema={validationSchema}
@@ -76,7 +72,7 @@ export const LoginForm: React.FC = () => {
                   placeholder="Enter your email"
                   autoComplete="email"
                 />
-                
+
                 <FormInput
                   name="password"
                   label="Password"
@@ -85,15 +81,15 @@ export const LoginForm: React.FC = () => {
                   placeholder="Enter your password"
                   autoComplete="current-password"
                 />
-                
-                <button type="submit" disabled={isSubmitting || isLoading}>
-                  {isLoading ? "Logging in..." : "Login"}
+
+                <button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? "Logging in..." : "Login"}
                 </button>
-                
+
                 <div className={styles.links}>
                   Not a user? <NavLink to="/2fa-setup">2FA Setup</NavLink>
                 </div>
-                
+
                 <div className={styles.links}>
                   <NavLink to="/verify-2fa">Forgot Password?</NavLink>
                 </div>

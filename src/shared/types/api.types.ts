@@ -12,15 +12,6 @@ export interface LoginState {
   password: string;
 }
 
-export interface UserData {
-  id: string;
-  email: string;
-  firstName?: string;
-  lastName?: string;
-  isAdmin?: boolean;
-  hasTwoFactorEnabled?: boolean;
-}
-
 export interface AuthResponse {
   status: 'success' | 'error' | 'pending';
   message?: string;
@@ -32,15 +23,30 @@ export interface AuthResponse {
   };
 }
 
+interface BaseUser {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+  adminPassword: string;
+}
+export interface Admin extends BaseUser {}
+
+export interface User extends BaseUser {}
+
+export type UserRole = 'admin' | 'user';
+
 export interface IVerify2FAResponse {
+  userId?: string | undefined;
   token: string;
+  refreshToken: string;
   status: string;
-  data: {
-    id: string;
-  };
+  data?: Admin | User;
 }
 
 export interface TwoFactorSetupResponse {
+  data: any;
+  qrCode: string;
   qrCodeUrl: string;
 }
 

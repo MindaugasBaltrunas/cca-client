@@ -41,7 +41,6 @@ export const API_CONFIG = {
       SIGN_UP: 'auth:register',
       SIGN_OUT: 'auth:logout',
       REFRESH_TOKEN: 'auth:refresh-token',
-      CURRENT_USER: 'auth:me',
       TWO_FACTOR: {
         SETUP: 'auth:2fa-setup',
         ENABLE: 'auth:2fa-enable',

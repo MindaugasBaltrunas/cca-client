@@ -1,8 +1,5 @@
-export const AUTH_USER_KEY = ['currentUser'] as const;
-
 export const queryKeys = {
   auth: {
-    user: AUTH_USER_KEY,
     login: ['auth', 'login'] as const,
     adminLogin: ['auth', 'adminLogin'] as const,
     register: ['auth', 'register'] as const,

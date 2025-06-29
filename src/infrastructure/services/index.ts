@@ -14,7 +14,6 @@ export {
 export type {
   SignUpData,
   LoginState,
-  UserData,
   AuthResponse,
   IVerify2FAResponse,
   TwoFactorSetupResponse,

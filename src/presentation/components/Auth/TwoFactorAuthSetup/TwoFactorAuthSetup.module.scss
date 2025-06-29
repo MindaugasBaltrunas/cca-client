@@ -1,0 +1,60 @@
+.container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 32px 24px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e9ecef;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #212529;
+  text-align: center;
+  margin-bottom: 32px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #e9ecef;
+  
+  &::before {
+    content: '🔐';
+    display: block;
+    font-size: 48px;
+    margin-bottom: 16px;
+  }
+}
+
+.content {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .container {
+    margin: 16px;
+    padding: 24px 16px;
+    max-width: calc(100% - 32px);
+  }
+  
+  .title {
+    font-size: 24px;
+    margin-bottom: 24px;
+    
+    &::before {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+  }
+}

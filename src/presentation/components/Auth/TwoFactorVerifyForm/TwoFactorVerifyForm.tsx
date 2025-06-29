@@ -17,7 +17,7 @@ const TwoFactorVerifyForm: React.FC<TwoFactorVerifyFormProps> = ({
   onSuccess,
   redirectTo = "/",
 }) => {
-  const { error, isLoading, verifyTwoFactorAuth } = useAuth();
+  const { verifyTwoFactorAuth } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || redirectTo;
@@ -33,13 +33,20 @@ const TwoFactorVerifyForm: React.FC<TwoFactorVerifyFormProps> = ({
 
       const result = await verifyTwoFactorAuth(userId, values.verificationCode);
 
-      if (result?.status !== "success") throw new Error(result.status || "Verification failed");
+      if (!result || result.status !== "success")
+        throw new Error(result?.status || "Verification failed");
 
       onSuccess?.();
       navigate(from, { replace: true });
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Verification failed. Please try again.";
-      if (message.toLowerCase().includes("invalid") || message.toLowerCase().includes("incorrect")) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Verification failed. Please try again.";
+      if (
+        message.toLowerCase().includes("invalid") ||
+        message.toLowerCase().includes("incorrect")
+      ) {
         setFieldError("verificationCode", message);
       } else {
         setStatus(message);
@@ -57,7 +64,11 @@ const TwoFactorVerifyForm: React.FC<TwoFactorVerifyFormProps> = ({
         onSubmit={handleSubmit}
       >
         {(formikProps) => (
-          <TwoFactorFormContent {...formikProps} errors={error} isLoading={isLoading} onCancel={() => navigate("/login", { replace: true })} />
+          <TwoFactorFormContent
+          isLoading={false} {...formikProps}
+          // errors={error}
+          // isLoading={isLoading}
+          onCancel={() => navigate("/login", { replace: true })}          />
         )}
       </Formik>
     </div>

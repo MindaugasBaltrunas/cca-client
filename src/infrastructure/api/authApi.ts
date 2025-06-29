@@ -1,18 +1,17 @@
-import { API_CONFIG }                   from '../../shared/config/apiConfig';
-import { http }              from '../../shared/http';
-import { sanitizeString }               from '../services/xssGuard';
-import { logger }                       from '../../shared/utils/logger';
-import { EventBus }                     from '../../shared/utils/eventBus';
+import { API_CONFIG } from '../../shared/config/apiConfig';
+import { http } from '../../shared/http';
+import { sanitizeString } from '../services/xssGuard';
+import { logger } from '../../shared/utils/logger';
+import { EventBus } from '../../shared/utils/eventBus';
 
 import type {
   AuthResponse,
   IVerify2FAResponse,
   LoginState,
   SignUpData,
-  TwoFactorSetupResponse,
-  UserData
+  TwoFactorSetupResponse
 } from '../../shared/types/api.types';
-import { clearTokens, getAccessToken, saveTokens } from '../services/tokenStorage';
+import { clearTokens, saveTokens } from '../services/tokenStorage';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
   logger.debug('Handling successful authentication response', response);
@@ -21,7 +20,7 @@ const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
     const { accessToken, refreshToken } = response.data;
 
     await saveTokens({
-      token:       accessToken ?? '',
+      token: accessToken ?? '',
       refreshToken
     });
 
@@ -32,7 +31,7 @@ const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
 const handleApiError = (error: unknown, context: string): AuthResponse => {
   logger.error(`${context}:`, error);
   return {
-    status:  'error',
+    status: 'error',
     message: error instanceof Error ? error.message : `${context} occurred`,
   };
 };
@@ -105,24 +104,6 @@ export const logout = async (userId: string): Promise<AuthResponse> => {
   }
 };
 
-export const getCurrentUser = async (): Promise<UserData | null> => {
-  try {
-    logger.debug('Fetching current user data');
-    const token = await getAccessToken();
-    if (!token) {
-      logger.debug('No access token found, skipping current user request');
-      return null;
-    }
-    const response = await http.post(
-      API_CONFIG.ENDPOINTS.AUTH.CURRENT_USER,
-      {}
-    );
-    return response.data.user;
-  } catch (error) {
-    logger.error('Get current user error:', error);
-    return null;
-  }
-};
 
 export const setup2FA = async (): Promise<TwoFactorSetupResponse> => {
   try {
@@ -181,8 +162,8 @@ export const verify2FA = async (
     const response = await http.post(
       API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.VERIFY,
       {
-        userId:   sanitizeString(userId),
-        token:    sanitizeString(token)
+        userId: sanitizeString(userId),
+        token: sanitizeString(token)
       }
     );
     if (response.data.status === 'success' && response.data.data) {
@@ -215,7 +196,6 @@ export const authApi = {
   adminLogin,
   register,
   logout,
-  getCurrentUser,
   setup2FA,
   enable2FA,
   disable2FA,

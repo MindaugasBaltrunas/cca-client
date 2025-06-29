@@ -21,14 +21,14 @@ export const TwoFactorFormContent: React.FC<Props> = ({
   touched,
   isSubmitting,
   status,
-  error,
-  isLoading,
+  // error,
+  // isLoading,
   setFieldValue,
   onCancel,
 }) => {
-  const displayError = status || error;
+  const displayError = status; // || error;
   const isDisabled =
-    isLoading ||
+    // isLoading ||
     isSubmitting ||
     values.verificationCode.length !== 6 ||
     !!(touched.verificationCode && errors.verificationCode);
