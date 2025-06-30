@@ -1,11 +1,12 @@
-import React from 'react';
-import AppProviders from './providers';
-import Routing from './presentation/routes/Routing';
+import React from "react";
+import { BrowserRouter as Router } from "react-router-dom";
+import AppProviders from "./providers";
+import Routing from "./presentation/routes/Routing";
 
 const App: React.FC = () => {
   return (
     <AppProviders>
-      <Routing/>
+      <Routing />
     </AppProviders>
   );
 };

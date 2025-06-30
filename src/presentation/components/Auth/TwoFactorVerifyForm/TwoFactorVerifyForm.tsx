@@ -17,7 +17,7 @@ const TwoFactorVerifyForm: React.FC<TwoFactorVerifyFormProps> = ({
   onSuccess,
   redirectTo = "/",
 }) => {
-  const { verifyTwoFactorAuth } = useAuth();
+  const { verifyTwoFactorAuth, error, isLoading } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const from = location.state?.from?.pathname || redirectTo;
@@ -65,10 +65,11 @@ const TwoFactorVerifyForm: React.FC<TwoFactorVerifyFormProps> = ({
       >
         {(formikProps) => (
           <TwoFactorFormContent
-          isLoading={false} {...formikProps}
-          // errors={error}
-          // isLoading={isLoading}
-          onCancel={() => navigate("/login", { replace: true })}          />
+            isLoading={isLoading}
+            {...formikProps}
+            errors={error}
+            onCancel={() => navigate("/login", { replace: true })}
+          />
         )}
       </Formik>
     </div>

@@ -1,15 +1,16 @@
-import { useCallback } from "react";
-import { getAccessToken } from "../../infrastructure/services/tokenStorage";
+import { useTokenData } from "./useTokenData";
 
+/**
+ * Hook for accessing token data
+ * Simplified interface for components that only need token info
+ */
 export const useAccessToken = () => {
-  const fetchToken = useCallback(async (): Promise<string | null> => {
-    try {
-      const accessToken = await getAccessToken();
-      return accessToken || null;
-    } catch {
-      return null;
-    }
-  }, []);
-
-  return { fetchToken };
+  const { data, isLoading, error } = useTokenData();
+  
+  return {
+    token: data?.accessToken ?? null,
+    hasToken: data?.hasAccessToken ?? false,
+    isLoading,
+    error
+  };
 };

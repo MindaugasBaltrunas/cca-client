@@ -21,14 +21,14 @@ export const TwoFactorFormContent: React.FC<Props> = ({
   touched,
   isSubmitting,
   status,
-  // error,
-  // isLoading,
+  error,
+  isLoading,
   setFieldValue,
   onCancel,
 }) => {
-  const displayError = status; // || error;
+  const displayError = status || error;
   const isDisabled =
-    // isLoading ||
+    isLoading ||
     isSubmitting ||
     values.verificationCode.length !== 6 ||
     !!(touched.verificationCode && errors.verificationCode);
@@ -44,7 +44,9 @@ export const TwoFactorFormContent: React.FC<Props> = ({
 
       <Form noValidate>
         <div className={styles.fieldWrapper}>
-          <label htmlFor="verificationCode" className={styles.label}>Verification Code</label>
+          <label htmlFor="verificationCode" className={styles.label}>
+            Verification Code
+          </label>
           <Field name="verificationCode">
             {({ field }: any) => (
               <input
@@ -62,14 +64,27 @@ export const TwoFactorFormContent: React.FC<Props> = ({
               />
             )}
           </Field>
-          <p className={styles.helperText}>6-digit code from your authenticator app</p>
+          <p className={styles.helperText}>
+            6-digit code from your authenticator app
+          </p>
         </div>
 
         <div className={styles.actions}>
-          <button type="submit" disabled={isDisabled} className={`${styles.button} ${isDisabled ? styles.disabled : styles.primary}`}>
+          <button
+            type="submit"
+            disabled={isDisabled}
+            className={`${styles.button} ${
+              isDisabled ? styles.disabled : styles.primary
+            }`}
+          >
             {isSubmitting ? "Verifying..." : "Verify Code"}
           </button>
-          <button type="button" onClick={onCancel} disabled={isDisabled} className={styles.cancelButton}>
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isDisabled}
+            className={styles.cancelButton}
+          >
             Cancel
           </button>
         </div>
@@ -77,8 +92,14 @@ export const TwoFactorFormContent: React.FC<Props> = ({
 
       <div className={styles.footer}>
         <p>
-          Can’t access your app?{' '}
-          <button type="button" className={styles.link} onClick={() => console.log("Show backup method")}>Use backup method</button>
+          Can’t access your app?{" "}
+          <button
+            type="button"
+            className={styles.link}
+            onClick={() => console.log("Show backup method")}
+          >
+            Use backup method
+          </button>
         </p>
       </div>
     </>
