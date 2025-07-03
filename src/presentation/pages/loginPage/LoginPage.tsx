@@ -1,7 +1,7 @@
 import React from "react";
 import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
 import { useAuth } from "../../../context/AuthContext";
 import FormInput from "../../components/InputFields/FormInput";
@@ -24,7 +24,8 @@ const initialValues: LoginState = {
 
 export const LoginForm: React.FC = () => {
   const { signIn, isLoading } = useAuth();
-  const navigate = useNavigate();
+
+  logger.debug("Rendering LoginForm");
 
   const handleSubmit = async (
     values: LoginState,
@@ -33,17 +34,6 @@ export const LoginForm: React.FC = () => {
     try {
       const response = await signIn(values);
       logger.debug("Login response:", response);
-
-      if (response.status === "success") {
-        logger.debug("Login successful.");
-        navigate("/2fa-setup");
-      }
-
-      if (response.status === "pending") {
-        logger.debug("Two-factor authentication required.");
-
-        navigate("/verify-2fa");
-      }
     } catch (error) {
       logger.error("Login failed:", error);
     } finally {

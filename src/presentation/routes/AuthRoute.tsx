@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 import Preloader from "../components/Preloader/preloader";
-import { useRouteAuth } from "../../core/hooks/useRouteAuth";
+import { useRouteAuth } from "../../core/authHooks/useRouteAuth";
 import { logger } from "../../shared/utils/logger";
 
 export interface AuthRouteProps {
