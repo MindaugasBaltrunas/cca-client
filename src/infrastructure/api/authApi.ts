@@ -14,7 +14,6 @@ import type {
 import { clearTokens, saveTokens } from '../services/tokenStorage';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
-  logger.debug('Handling successful authentication response', response);
 
   if (response.status === 'success' && response.data) {
     const { accessToken, refreshToken } = response.data;

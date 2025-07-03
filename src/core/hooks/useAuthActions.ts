@@ -2,37 +2,38 @@ import { useQueryClient } from '@tanstack/react-query';
 import type { TokenData } from './types';
 
 /**
- * Utility hooks for managing authentication state
- * Provides actions for refresh, clear, and cache management
+ * Utility hooks for managing authentication state.
+ * Provides actions for refresh, clear, and cache management.
  */
 export const useAuthActions = () => {
   const queryClient = useQueryClient();
-  
+  const queryKey = ['auth-tokens'];
+
   return {
     /**
-     * Refresh all authentication data
+     * Refresh authentication data by invalidating the query.
      */
-    refreshAuth: () => queryClient.invalidateQueries({ queryKey: ['auth-tokens'] }),
-    
+    refreshAuth: () => queryClient.invalidateQueries({ queryKey }),
+
     /**
-     * Clear authentication cache (for logout)
+     * Clear authentication data from the cache (useful for logout).
      */
     clearAuth: () => {
-      queryClient.setQueryData(['auth-tokens'], null);
-      queryClient.removeQueries({ queryKey: ['auth-tokens'] });
+      queryClient.setQueryData(queryKey, null);
+      queryClient.removeQueries({ queryKey });
     },
-    
+
     /**
-     * Get current auth data without triggering re-render
+     * Get the current cached authentication data without causing re-render.
      */
-    getCurrentAuthData: (): TokenData | undefined => queryClient.getQueryData(['auth-tokens']),
-    
+    getCurrentAuthData: (): TokenData | undefined => queryClient.getQueryData(queryKey),
+
     /**
-     * Prefetch authentication data
+     * Prefetch authentication data in the background.
      */
     prefetchAuth: () => queryClient.prefetchQuery({
-      queryKey: ['auth-tokens'],
-      staleTime: 5 * 60 * 1000
-    })
+      queryKey,
+      staleTime: 5 * 60 * 1000, // same as your hook
+    }),
   };
 };

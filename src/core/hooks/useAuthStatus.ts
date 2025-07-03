@@ -1,5 +1,5 @@
 import { useAuth } from "../../context/AuthContext";
-import { useTokenData } from "./useTokenData";
+import { useTokenData } from "./index";
 import type { AuthStatus } from "./types";
 
 /**
@@ -9,7 +9,7 @@ import type { AuthStatus } from "./types";
  */
 export const useAuthStatus = (): AuthStatus => {
   const { isAuthenticated: contextAuth, isLoading: authLoading } = useAuth();
-  const { data: tokenData, isLoading: tokenLoading } = useTokenData();
+  const { data: tokenData, isLoading: tokenLoading, status } = useTokenData();
   
   // Compute authentication state
   const tokenAuth = tokenData?.hasAccessToken ?? false;
@@ -23,6 +23,7 @@ export const useAuthStatus = (): AuthStatus => {
     isLoggedIn, 
     tokenValid,
     tokenData,
-    isLoading
+    isLoading, 
+    status
   };
 };

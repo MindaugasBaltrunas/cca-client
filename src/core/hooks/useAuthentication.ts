@@ -9,8 +9,8 @@ import {
 import { saveTokens } from '../../infrastructure/services/tokenStorage';
 import { logger } from '../../shared/utils/logger';
 import { Admin, User } from '../../shared/types/api.types';
-import { useTokenData } from './useTokenData';
-import { useAuthActions } from './useAuthActions';
+import { useTokenData } from './index';
+import { useAuthActions } from './index';
 import type { AuthenticationState, AuthenticationActions } from './types';
 
 /**
@@ -57,7 +57,6 @@ export const useAuthentication = (): AuthenticationState & AuthenticationActions
       if (data.data) {
         setCurrentUser(data.data);
       }
-      // Refresh cache to sync with new tokens
       refreshAuth();
     } else {
       setTwoFactorUserId(data.userId ?? null);

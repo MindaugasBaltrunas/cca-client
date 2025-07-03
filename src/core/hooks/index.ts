@@ -21,6 +21,3 @@ export type {
   AuthenticationActions,
   AuthContextType 
 } from './types';
-
-// Re-export context hook for convenience
-export { useAuth } from '../../context/AuthContext';

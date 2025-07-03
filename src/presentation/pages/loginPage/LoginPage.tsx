@@ -8,6 +8,7 @@ import FormInput from "../../components/InputFields/FormInput";
 import Preloader from "../../components/Preloader/preloader";
 import styles from "./login.module.scss";
 import { LoginState } from "../../../infrastructure/services";
+import { logger } from "../../../shared/utils/logger";
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -31,19 +32,20 @@ export const LoginForm: React.FC = () => {
   ) => {
     try {
       const response = await signIn(values);
+      logger.debug("Login response:", response);
 
       if (response.status === "success") {
-        console.log("Login successful.");
+        logger.debug("Login successful.");
         navigate("/2fa-setup");
       }
 
       if (response.status === "pending") {
-        console.log("Two-factor authentication required.");
+        logger.debug("Two-factor authentication required.");
 
         navigate("/verify-2fa");
       }
     } catch (error) {
-      console.error("Login failed:", error);
+      logger.error("Login failed:", error);
     } finally {
       setSubmitting(false);
     }

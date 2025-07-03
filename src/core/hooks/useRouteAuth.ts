@@ -1,4 +1,4 @@
-import { useAuthStatus } from "./useAuthStatus";
+import { useAuthStatus } from "./index";
 import type { RouteAuthStatus } from "./types";
 
 /**
@@ -6,9 +6,11 @@ import type { RouteAuthStatus } from "./types";
  * Provides computed states specific to routing decisions
  */
 export const useRouteAuth = (): RouteAuthStatus => {
-  const { isReady, isLoggedIn, tokenData } = useAuthStatus();
+  const { isReady, isLoggedIn, tokenData, status } = useAuthStatus();
+  
   
   return {
+    status,
     isReady,
     isLoggedIn,
     hasUserId: tokenData?.hasUserId ?? false,

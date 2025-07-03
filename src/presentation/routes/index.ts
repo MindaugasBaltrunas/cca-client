@@ -1,16 +1,8 @@
 import React from 'react';
 
-// Main route components - default exports
-// export { default as ProtectedRoute } from './ProtectedRoute';
-// export { default as TwoFactorRoute } from './TwoFactorRoute'; 
-// export { default as AuthRoute } from './AuthRoute';
-// export { default as Routing } from './Routing';
-
-// Named exports for direct access
 export { ProtectedRoute } from './ProtectedRoute';
 export { TwoFactorRoute } from './TwoFactorRoute';
 export { AuthRoute } from './AuthRoute';
-export { Routing } from './Routing';
 
 // Export types
 export type { AuthRouteProps } from './AuthRoute';

@@ -1,4 +1,4 @@
-import { useTokenData } from "./useTokenData";
+import { useTokenData } from "./index";
 
 /**
  * Hook for accessing token data

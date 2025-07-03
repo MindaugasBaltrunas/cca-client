@@ -65,7 +65,7 @@ export const AuthRoute: React.FC<AuthRouteProps> = ({
     // Check if user should go to 2FA first
     if (shouldRedirectTo2FA) {
       logger.debug('Redirecting to 2FA flow');
-      return <Navigate to="/two-factor" state={{ from: location }} replace />;
+      return <Navigate to="/2fa-setup" state={{ from: location }} replace />;
     }
     
     logger.debug('Authentication required, redirecting', { to: fallbackPath });

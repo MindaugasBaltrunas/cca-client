@@ -12,9 +12,11 @@ export interface AuthStatus {
   tokenValid: boolean;
   tokenData?: TokenData;
   isLoading: boolean;
+  status: string;
 }
 
 export interface RouteAuthStatus {
+  status: string;
   isReady: boolean;
   isLoggedIn: boolean;
   hasUserId: boolean;
@@ -60,3 +62,7 @@ export interface AuthContextType extends AuthenticationState, AuthenticationActi
   setup2FAError: any;
   enable2FAError: any;
 }
+
+export type AuthTokenData = {
+  hasAccessToken?: boolean;
+};
