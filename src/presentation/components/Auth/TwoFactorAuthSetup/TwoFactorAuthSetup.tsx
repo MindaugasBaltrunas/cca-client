@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTwoFactorSetup } from "./hooks/useTwoFactorSetup";
 import ErrorMessage from "./components/ErrorMessage";
 import Preloader from "../../Preloader/preloader";
@@ -10,36 +10,86 @@ import styles from "./TwoFactorAuthSetup.module.scss";
 import { logger } from "../../../../shared/utils/logger";
 
 const TwoFactorAuthSetup: React.FC = () => {
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  // Use URL search params to persist QR code across re-mounts
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { error, isLoading, isVerifying, setupQrCode, verifyCode, clearError } =
-    useTwoFactorSetup();
+  
+  const { 
+    error, 
+    isLoading, 
+    isVerifying, 
+    setupQrCode, 
+    verifyCode, 
+    clearError 
+  } = useTwoFactorSetup();
+
+  // Get QR code from URL params (survives re-mounts)
+  const qrCodeUrl = searchParams.get('qr');
+
+  // Debug component lifecycle
+  useEffect(() => {
+    console.log("🏗️ TwoFactorAuthSetup component mounted");
+    console.log("🔍 QR from URL params:", qrCodeUrl);
+    return () => {
+      console.log("🏗️ TwoFactorAuthSetup component unmounting");
+    };
+  }, []);
+
+  // Debug state changes
+  useEffect(() => {
+    console.log("🔍 State changed:", {
+      qrCodeUrl,
+      error,
+      isLoading,
+      isVerifying,
+      shouldShowQrCode: !error && !isLoading && qrCodeUrl
+    });
+  }, [qrCodeUrl, error, isLoading, isVerifying]);
 
   const handleVerifyCode = async (code: string): Promise<void> => {
     try {
       const success = await verifyCode(code);
       if (success) {
-        navigate("/login");
+        // Clear QR from URL and navigate to dashboard
+        setSearchParams({});
+        navigate("/dashboard");
       }
     } catch (err) {
-      // Error is already set in the hook
       console.error("Verification error (already handled):", err);
     }
   };
 
-  const qrCodeUrlExists = async () => {
-    const qr = await setupQrCode();
-    setQrCodeUrl(qr?.qrCodeUrl || null);
-    logger.debug("Rendering TwoFactorAuthSetup component 1", {
-      qr,
-      error,
-      isLoading,
-    });
+  const handleSetupQrCode = async (): Promise<void> => {
+    try {
+      console.log("🚀 Starting QR code setup...");
+      
+      const qr = await setupQrCode();
+      
+      console.log("📊 QR response:", qr);
+      console.log("🔗 QR URL:", qr?.qrCodeUrl);
+      
+      // Store QR code in URL params (survives re-mounts)
+      const qrUrl = qr?.qrCodeUrl;
+      if (qrUrl) {
+        console.log("💾 Storing QR in URL params");
+        setSearchParams({ qr: qrUrl });
+      } else {
+        console.error("❌ No QR URL in response");
+      }
+      
+      logger.debug("QR Code setup completed");
+    } catch (err) {
+      console.error("❌ QR setup error:", err);
+      setSearchParams({}); // Clear on error
+      logger.error("Failed to setup QR code", err);
+    }
   };
-  logger.debug("Rendering TwoFactorAuthSetup component 2", {
+
+  logger.debug("Rendering TwoFactorAuthSetup", {
     qrCodeUrl,
     error,
     isLoading,
+    isVerifying
   });
 
   return (
@@ -48,14 +98,32 @@ const TwoFactorAuthSetup: React.FC = () => {
 
       <div className={styles.content}>
         {error && <ErrorMessage message={error} onClose={clearError} />}
+
         <Preloader isLoading={isLoading} />
 
+        {/* Debug info - remove in production */}
+        <div style={{ 
+          background: '#f0f0f0', 
+          padding: '10px', 
+          margin: '10px 0', 
+          fontSize: '12px',
+          fontFamily: 'monospace'
+        }}>
+          <strong>Debug Info:</strong><br />
+          Error: {error || 'none'}<br />
+          Loading: {isLoading.toString()}<br />
+          QR URL (from params): {qrCodeUrl ? 'present' : 'null'}<br />
+          Should show QR: {(!error && !isLoading && !!qrCodeUrl).toString()}
+        </div>
+
+        {/* Initial setup button */}
         {!isLoading && !qrCodeUrl && !error && (
-          <button onClick={qrCodeUrlExists} className={styles.setupButton}>
+          <button onClick={handleSetupQrCode} className={styles.setupButton}>
             Start Setup
           </button>
         )}
 
+        {/* QR Code and verification form */}
         {!error && !isLoading && qrCodeUrl && (
           <>
             <SetupInstructions />
@@ -67,8 +135,9 @@ const TwoFactorAuthSetup: React.FC = () => {
           </>
         )}
 
+        {/* Retry button when there's an error */}
         {error && !isLoading && (
-          <button onClick={qrCodeUrlExists} className={styles.retryButton}>
+          <button onClick={handleSetupQrCode} className={styles.retryButton}>
             Retry Setup
           </button>
         )}

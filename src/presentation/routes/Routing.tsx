@@ -5,6 +5,7 @@ import { useAuth } from "../../context/AuthContext";
 
 import ProtectedRoute from "./ProtectedRoute";
 import TwoFactorRoute from "./TwoFactorRoute";
+import TwoFactorAuthSetup from "../components/Auth/TwoFactorAuthSetup/TwoFactorAuthSetup";
 
 // Lazy-loaded pages
 const LoginPage = React.lazy(() => import("../pages/loginPage/LoginPage"));

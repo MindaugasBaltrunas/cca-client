@@ -20,25 +20,29 @@ export const TwoFactorRoute: React.FC = () => {
     return <Preloader isLoading={true} />;
   }
 
-  // No userId available anywhere
+  // No userId available anywhere - redirect to login
   if (!canAccess2FA && !id) {
     logger.debug("No userId available, redirecting to login");
     return <Navigate to="/login" replace />;
   }
 
-  // User is fully authenticated, redirect to main app
-  if (isLoggedIn && status === "success") {
-    const redirectPath = location.state?.from?.pathname || "/2fa-setup";
-    logger.debug("User fully authenticated, redirecting", { to: redirectPath });
-    return <Navigate to={redirectPath} replace />;
-  } else if (isLoggedIn && status === "pending") {
-    const redirectPath = location.state?.from?.pathname || "/verify-2fa";
-    logger.debug("User is in 2FA flow but not fully authenticated", {
-      to: redirectPath,
-    });
-    return <Navigate to={redirectPath} replace />;
+  // User is fully authenticated - redirect to 2FA setup if not already there
+  if (isLoggedIn && status === "success" && location.pathname !== "/2fa-setup") {
+    return <Navigate to="/2fa-setup" replace />;
   }
 
+  // User is logged in but needs 2FA verification
+  if (isLoggedIn && status === "pending" && location.pathname !== "/verify-2fa") {
+    return <Navigate to="/verify-2fa" replace />;
+  }
+
+  // User needs to set up 2FA (partially authenticated)
+  // This covers cases where user has basic auth but needs 2FA setup
+  if (canAccess2FA && !isLoggedIn && location.pathname !== "/2fa-setup") {
+    return <Navigate to="/2fa-setup" replace />;
+  }
+
+  // Allow access to the current route
   return <Outlet />;
 };
 
