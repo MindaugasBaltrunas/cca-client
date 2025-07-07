@@ -12,16 +12,16 @@ export interface AuthStatus {
   tokenValid: boolean;
   tokenData?: TokenData;
   isLoading: boolean;
-  status: string;
+  enabled?: boolean;
 }
 
-export interface RouteAuthStatus {
-  status: string;
+export interface RouteAuthStatus {  
   isReady: boolean;
   isLoggedIn: boolean;
   hasUserId: boolean;
   canAccess2FA: boolean;
   shouldRedirectTo2FA: boolean;
+  enabled?: boolean;
 }
 
 export interface AuthUser {
@@ -29,11 +29,11 @@ export interface AuthUser {
   name: string;
   email: string;
   role: string;
-  [key: string]: any;
 }
 
 export interface AuthenticationState {
   user: AuthUser | null;
+  enabled?: boolean;
   isAuthenticated: boolean;
   isInTwoFactorFlow: boolean;
   requiresTwoFactor: boolean;

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, {  useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTwoFactorSetup } from "./hooks/useTwoFactorSetup";
 import ErrorMessage from "./components/ErrorMessage";
@@ -23,19 +23,8 @@ const TwoFactorAuthSetup: React.FC = () => {
     clearError 
   } = useTwoFactorSetup();
 
-  // Get QR code from URL params (survives re-mounts)
   const qrCodeUrl = searchParams.get('qr');
 
-  // Debug component lifecycle
-  useEffect(() => {
-    console.log("🏗️ TwoFactorAuthSetup component mounted");
-    console.log("🔍 QR from URL params:", qrCodeUrl);
-    return () => {
-      console.log("🏗️ TwoFactorAuthSetup component unmounting");
-    };
-  }, []);
-
-  // Debug state changes
   useEffect(() => {
     console.log("🔍 State changed:", {
       qrCodeUrl,
@@ -52,7 +41,7 @@ const TwoFactorAuthSetup: React.FC = () => {
       if (success) {
         // Clear QR from URL and navigate to dashboard
         setSearchParams({});
-        navigate("/dashboard");
+        navigate("/verify-2fa");
       }
     } catch (err) {
       console.error("Verification error (already handled):", err);
@@ -60,21 +49,13 @@ const TwoFactorAuthSetup: React.FC = () => {
   };
 
   const handleSetupQrCode = async (): Promise<void> => {
-    try {
-      console.log("🚀 Starting QR code setup...");
-      
+    try {      
       const qr = await setupQrCode();
-      
-      console.log("📊 QR response:", qr);
-      console.log("🔗 QR URL:", qr?.qrCodeUrl);
       
       // Store QR code in URL params (survives re-mounts)
       const qrUrl = qr?.qrCodeUrl;
       if (qrUrl) {
-        console.log("💾 Storing QR in URL params");
         setSearchParams({ qr: qrUrl });
-      } else {
-        console.error("❌ No QR URL in response");
       }
       
       logger.debug("QR Code setup completed");

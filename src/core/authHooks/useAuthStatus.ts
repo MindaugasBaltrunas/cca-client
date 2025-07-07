@@ -8,8 +8,8 @@ import type { AuthStatus } from "./types";
  * Provides computed authentication state for components
  */
 export const useAuthStatus = (): AuthStatus => {
-  const { isAuthenticated: contextAuth, isLoading: authLoading } = useAuth();
-  const { data: tokenData, isLoading: tokenLoading, status } = useTokenData();
+  const { isAuthenticated: contextAuth, isLoading: authLoading, enabled } = useAuth();
+  const { data: tokenData, isLoading: tokenLoading } = useTokenData();
   
   // Compute authentication state
   const tokenAuth = tokenData?.hasAccessToken ?? false;
@@ -24,6 +24,6 @@ export const useAuthStatus = (): AuthStatus => {
     tokenValid,
     tokenData,
     isLoading, 
-    status
+    enabled
   };
 };

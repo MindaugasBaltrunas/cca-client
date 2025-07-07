@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getAccessToken, getId } from "../../infrastructure/services/tokenStorage";
 import type { TokenData } from "./types";
+import { logger } from "../../shared/utils/logger";
 
 /**
  * Core hook for managing all token-related data.
@@ -43,6 +44,10 @@ export const useTokenData = () => {
     gcTime: 10 * 60 * 1000,   // 10 minutes
     retry: 1,
     refetchOnWindowFocus: false
+  });
+
+  logger.debug("Token data query status:", {
+    query: query,
   });
 
   return {

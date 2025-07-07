@@ -30,6 +30,7 @@ export const useAuthentication = (): AuthenticationState & AuthenticationActions
   const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
   const [twoFactorUserId, setTwoFactorUserId] = useState<string | null>(null);
   const [currentUser, setCurrentUser] = useState<Admin | User | null>(null);
+  const [enabled, setEnabled] = useState<boolean | undefined>(undefined);
 
   // Use centralized token data
   const { data: tokenData, isLoading: isTokenLoading } = useTokenData();
@@ -96,11 +97,12 @@ export const useAuthentication = (): AuthenticationState & AuthenticationActions
           break;
         case 'success':
           if (data.accessToken) {
+            setEnabled(data.enabled);
             updateAuthState({
               token: data.accessToken,
               userId: data.userId,
               refreshToken: data.refreshToken ?? '',
-              status: status,
+              status: data.status,
             });
           } else {
             logger.error('Login successful but missing accessToken');
@@ -280,6 +282,9 @@ export const useAuthentication = (): AuthenticationState & AuthenticationActions
     // Internal methods (for advanced use)
     enterTwoFactorFlow,
     clearAuthState,
+
+    //2fa 
+    enabled,
 
     // Individual mutation errors
     loginError: loginMutation.error,

@@ -4,14 +4,23 @@ import Preloader from "../components/Preloader/preloader";
 import { useRouteAuth } from "../../core/authHooks/useRouteAuth";
 import { logger } from "../../shared/utils/logger";
 import { getId } from "../../infrastructure/services/tokenStorage";
+import { log } from "console";
 
 /**
  * 2FA-specific route: user must have ID but not full auth
  * Intermediate state between login and full authentication
  */
 export const TwoFactorRoute: React.FC = () => {
-  const { isReady, isLoggedIn, canAccess2FA, status } = useRouteAuth();
+  const { isReady, isLoggedIn, canAccess2FA, enabled, shouldRedirectTo2FA } =
+    useRouteAuth();
   const location = useLocation();
+
+  // if (!shouldRedirectTo2FA) {
+  //     logger.debug("TwoFactorRoute rendering", {
+  //   shouldRedirectTo2FA,
+  // });
+  //   return <Navigate to="/login" state={{ from: location }} replace />;
+  // }
 
   // Check for userId from location state as fallback
   const id = getId();
@@ -27,12 +36,16 @@ export const TwoFactorRoute: React.FC = () => {
   }
 
   // User is fully authenticated - redirect to 2FA setup if not already there
-  if (isLoggedIn && status === "success" && location.pathname !== "/2fa-setup") {
+  if (isLoggedIn && !enabled && location.pathname !== "/2fa-setup") {
     return <Navigate to="/2fa-setup" replace />;
   }
-
+  logger.debug("User is logged in but needs 2FA verification", {
+    isLoggedIn,
+    enabled,
+    location: location.pathname,
+  });
   // User is logged in but needs 2FA verification
-  if (isLoggedIn && status === "pending" && location.pathname !== "/verify-2fa") {
+  if (isLoggedIn && enabled && location.pathname !== "/verify-2fa") {
     return <Navigate to="/verify-2fa" replace />;
   }
 

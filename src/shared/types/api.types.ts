@@ -16,10 +16,12 @@ export interface AuthResponse {
   status: 'success' | 'error' | 'pending';
   message?: string;
   data?: {
+    status: string;
     accessToken?: string;
     refreshToken?: string;
     userId?: string;
     expiresAt?: number;
+    enabled: boolean;
   };
 }
 
@@ -42,6 +44,7 @@ export interface IVerify2FAResponse {
   refreshToken: string;
   status: string;
   data?: Admin | User;
+  enabled?: boolean;
 }
 
 export interface TwoFactorSetupResponse {

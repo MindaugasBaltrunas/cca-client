@@ -6,15 +6,15 @@ import type { RouteAuthStatus } from "./types";
  * Provides computed states specific to routing decisions
  */
 export const useRouteAuth = (): RouteAuthStatus => {
-  const { isReady, isLoggedIn, tokenData, status } = useAuthStatus();
+  const { isReady, isLoggedIn, tokenData, enabled } = useAuthStatus();
   
   
   return {
-    status,
     isReady,
     isLoggedIn,
     hasUserId: tokenData?.hasUserId ?? false,
     canAccess2FA: !isLoggedIn && (tokenData?.hasUserId ?? false),
-    shouldRedirectTo2FA: !!(tokenData?.hasAccessToken && !tokenData?.hasUserId)
+    shouldRedirectTo2FA: !!(tokenData?.hasAccessToken && !tokenData?.hasUserId),
+    enabled
   };
 };
