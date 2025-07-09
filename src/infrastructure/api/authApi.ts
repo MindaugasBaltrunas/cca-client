@@ -12,15 +12,18 @@ import type {
   TwoFactorSetupResponse
 } from '../../shared/types/api.types';
 import { clearTokens, saveTokens } from '../services/tokenStorage';
+import { determineExpiresIn } from '../services/authHelpers';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
 
   if (response.status === 'success' && response.data) {
-    const { accessToken, refreshToken } = response.data;
+    const { accessToken, refreshToken, userId, expiresAt } = response.data;
 
     await saveTokens({
       token: accessToken ?? '',
-      refreshToken
+      refreshToken,
+      expiresIn: expiresAt ? determineExpiresIn(expiresAt) : undefined,
+      id: userId ?? ''
     });
 
     EventBus.emit('auth:login', response);
@@ -37,7 +40,6 @@ const handleApiError = (error: unknown, context: string): AuthResponse => {
 
 export const login = async (credentials: LoginState): Promise<AuthResponse> => {
   try {
-    logger.debug('Attempting user login');
     const response = await http.post(
       API_CONFIG.ENDPOINTS.AUTH.SIGN_IN,
       credentials

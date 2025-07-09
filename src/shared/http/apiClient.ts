@@ -20,7 +20,6 @@ const debugClientConfig = () => {
   };
   
   logger.info('HTTP Client Configuration:', config);
-  console.log('=== HTTP CLIENT DEBUG ===', config);
   return config;
 };
 
@@ -112,7 +111,6 @@ export const post = <T = any>(
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
   try {
-    logger.debug(`POST request to: ${url}`, { hasData: !!data });
     return axiosInstance.post<T, AxiosResponse<T>>(url, data, config);
   } catch (error) {
     logger.error(`POST ${url} failed:`, error);

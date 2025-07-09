@@ -18,7 +18,7 @@ export const useTokenData = () => {
       const hasAccessToken = Boolean(accessToken);
       const hasUserId = Boolean(userId);
       const hasValidToken = hasAccessToken && hasUserId;
-
+      logger.debug("Token data fetched:", { hasUserId, hasAccessToken, hasValidToken, accessToken, userId });
       return {
         accessToken,
         userId,
@@ -46,12 +46,7 @@ export const useTokenData = () => {
     refetchOnWindowFocus: false
   });
 
-  logger.debug("Token data query status:", {
-    query: query,
-  });
-
   return {
-    ...query,
-    status: query.status
+    ...query
   };
 };

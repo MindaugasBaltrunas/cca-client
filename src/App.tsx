@@ -1,6 +1,6 @@
 import React from "react";
 import AppProviders from "./providers";
-import Routing from "./presentation/routes/Routing";
+import { Routing } from "./presentation/routes/index";
 
 const App: React.FC = () => {
   return (

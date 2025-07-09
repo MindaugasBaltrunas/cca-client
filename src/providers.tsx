@@ -26,27 +26,26 @@ interface AppProviderProps {
 
 const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   return (
-    <>
-      <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <Router>
-            <FormikProvider
-              config={{
-                validateOnBlur: true,
-                validateOnChange: false,
-                validateOnMount: false,
-              }}
-            >
-              <PaginationProvider>{children}</PaginationProvider>
-            </FormikProvider>
-          </Router>
-        </AuthProvider>
-
-        {process.env.NODE_ENV === "development" && (
-          <ReactQueryDevtools initialIsOpen={false} position="bottom" />
-        )}
-      </QueryClientProvider>
-    </>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <Router>
+          <FormikProvider
+            config={{
+              validateOnBlur: true,
+              validateOnChange: false,
+              validateOnMount: false,
+            }}
+          >
+            <PaginationProvider>
+              {children}
+            </PaginationProvider>
+          </FormikProvider>
+        </Router>
+      </AuthProvider>
+      {process.env.NODE_ENV === "development" && (
+        <ReactQueryDevtools initialIsOpen={false} position="bottom" />
+      )}
+    </QueryClientProvider>
   );
 };
 

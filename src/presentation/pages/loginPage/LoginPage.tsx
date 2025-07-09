@@ -25,15 +25,12 @@ const initialValues: LoginState = {
 export const LoginForm: React.FC = () => {
   const { signIn, isLoading } = useAuth();
 
-  logger.debug("Rendering LoginForm");
-
   const handleSubmit = async (
     values: LoginState,
     { setSubmitting, resetForm }: FormikHelpers<LoginState>
   ) => {
     try {
-      const response = await signIn(values);
-      logger.debug("Login response:", response);
+      await signIn(values);
     } catch (error) {
       logger.error("Login failed:", error);
     } finally {

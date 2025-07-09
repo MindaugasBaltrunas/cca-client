@@ -1,72 +1,49 @@
-import React from 'react';
-import AuthRoute, { type AuthRouteProps } from './AuthRoute';
+import React from "react";
+import { AuthRoute } from "./AuthRoute";
+
+// Route konfigūracijos
+export const routeConfigs = {
+  protected: {
+    requireFullAuth: true,
+    fallbackPath: "/login"
+  },
+  public: {
+    allowPublic: true,
+    redirectIfAuthenticated: "/dashboard"  
+  },
+  twoFactor: {
+    require2FA: true,
+    requireFullAuth: false
+  },
+  admin: {
+    requireFullAuth: true,
+    fallbackPath: "/admin-login"
+  },
+  guest: {
+    allowPublic: true,
+    redirectIfAuthenticated: "/dashboard"
+  }
+} as const;
 
 /**
- * Pre-configured route components for common use cases
+ * Route komponentai naudojantys routeConfigs
  */
-
-/**
- * Admin route with custom login fallback
- */
-export const AdminRoute: React.FC = () => (
-  <AuthRoute 
-    requireFullAuth={true} 
-    fallbackPath="/admin-login" 
-  />
+export const ProtectedRoute: React.FC = () => (
+  <AuthRoute {...routeConfigs.protected} />
 );
 
-/**
- * Public route that redirects authenticated users
- */
 export const PublicOnlyRoute: React.FC = () => (
-  <AuthRoute 
-    allowPublic={true} 
-    redirectIfAuthenticated="/dashboard" 
-  />
+  <AuthRoute {...routeConfigs.public} />
 );
 
-/**
- * 2FA-only route for two-factor authentication flow
- */
-export const TwoFactorOnlyRoute: React.FC = () => (
-  <AuthRoute 
-    require2FA={true} 
-    requireFullAuth={false} 
-  />
+export const TwoFactorRoute: React.FC = () => (
+  <AuthRoute {...routeConfigs.twoFactor} />
 );
 
-/**
- * Manager route with custom configuration
- */
-export const ManagerRoute: React.FC = () => (
-  <AuthRoute 
-    requireFullAuth={true} 
-    fallbackPath="/login" 
-  />
+export const AdminRoute: React.FC = () => (
+  <AuthRoute {...routeConfigs.admin} />
 );
 
-/**
- * Guest route for unauthenticated users
- */
 export const GuestRoute: React.FC = () => (
-  <AuthRoute 
-    allowPublic={true} 
-    redirectIfAuthenticated="/dashboard" 
-  />
-);
-
-/**
- * Custom route creator with props
- */
-interface CustomRouteProps extends AuthRouteProps {
-  children?: React.ReactNode;
-}
-
-export const CustomRoute: React.FC<CustomRouteProps> = ({ 
-  children, 
-  ...authProps 
-}) => (
-  <AuthRoute {...authProps}>
-    {children}
-  </AuthRoute>
+  <AuthRoute {...routeConfigs.guest} />
 );

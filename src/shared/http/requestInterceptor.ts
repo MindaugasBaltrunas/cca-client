@@ -131,7 +131,6 @@ export const requestInterceptor = async (
 ): Promise<InternalAxiosRequestConfig> => {
     try {
         const requestId = `req_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        logger.debug(`Processing request ${requestId} to: ${config.url}`);
         
         const processedConfig = await composeAsyncInterceptors([
             applyCommonHeaders,

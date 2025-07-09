@@ -1,14 +1,19 @@
+import { logger } from "../../shared/utils/logger";
 import { useAuthStatus } from "./index";
 import type { RouteAuthStatus } from "./types";
 
-/**
- * Specialized hook for route protection logic
- * Provides computed states specific to routing decisions
- */
 export const useRouteAuth = (): RouteAuthStatus => {
   const { isReady, isLoggedIn, tokenData, enabled } = useAuthStatus();
-  
-  
+  logger.debug("Route auth hook:", tokenData?.hasUserId);
+  // logger.debug("Route auth status:", {
+  //   isReady,
+  //   isLoggedIn,
+  //   hasUserId: tokenData?.hasUserId,
+  //   canAccess2FA: !isLoggedIn && tokenData?.hasUserId,
+  //   shouldRedirectTo2FA: !!(tokenData?.hasAccessToken && !tokenData?.hasUserId),
+  //   enabled
+  // });
+
   return {
     isReady,
     isLoggedIn,

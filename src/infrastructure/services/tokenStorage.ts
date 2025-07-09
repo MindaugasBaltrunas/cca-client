@@ -1,4 +1,5 @@
 import * as jwtDecodeModule from 'jwt-decode';
+import { logger } from '../../shared/utils/logger';
 
 // Storage keys
 const ACCESS_TOKEN_KEY = 'auth_access_token';
@@ -12,17 +13,20 @@ const EXPIRY_BUFFER_MS = 10000;
 
 const jwtDecode = jwtDecodeModule as unknown as <T = { exp?: number }>(
   token: string
-) => T
+) => T;
 
 // Interfaces
 export interface TokenInfo {
   id?: string;
   token: string;
-  refreshToken?: string | null;
-  expiresIn?: number;
+  refreshToken?: string | null | undefined;
+  expiresIn?: number | undefined;
 }
 
-interface EncryptedData { iv: number[]; data: number[]; }
+interface EncryptedData { 
+  iv: number[]; 
+  data: number[]; 
+}
 
 // In-memory CryptoKey
 let cryptoKey: CryptoKey | null = null;
@@ -89,10 +93,11 @@ function secureRemove(key: string): void {
 export const setId = (id: string) => secureSet(ID_KEY, id);
 export const getId = () => secureGet(ID_KEY);
 export const setAccessToken = (t: string) => secureSet(ACCESS_TOKEN_KEY, t);
-export const getAccessToken =  () => secureGet(ACCESS_TOKEN_KEY);
+export const getAccessToken = () => secureGet(ACCESS_TOKEN_KEY);
 export const setRefreshToken = (t: string) => secureSet(REFRESH_TOKEN_KEY, t);
 export const getRefreshToken = () => secureGet(REFRESH_TOKEN_KEY);
 export const setTokenExpiry = (ms: number) => secureSet(TOKEN_EXPIRY_KEY, ms);
+
 export async function getTokenExpiry(): Promise<number | null> {
   const v = await secureGet(TOKEN_EXPIRY_KEY);
   const n = v ? Number(v) : NaN;
@@ -113,30 +118,72 @@ export function getExpiryDateFromToken(token: string): Date | null {
   }
 }
 
+/**
+ * Enhanced saveTokens with better validation and logging
+ */
 export async function saveTokens({ token, refreshToken, expiresIn, id }: TokenInfo): Promise<void> {
-  if (id && id.trim() !== '') {
-    await setId(id);
-  }
+  try {
+    // Validacija
+    if (!token?.trim()) {
+      throw new Error('Access token is required');
+    }
 
-  await setAccessToken(token);
-  if (refreshToken != null) {
-    await setRefreshToken(refreshToken);
-  } else {
-    secureRemove(REFRESH_TOKEN_KEY);
-  }
-  if (Number.isFinite(expiresIn as number)) {
-    await setTokenExpiry(Date.now() + (expiresIn as number) * 1000);
-  } else {
-    secureRemove(TOKEN_EXPIRY_KEY);
+    // Išsaugome access token
+    await setAccessToken(token);
+
+    // Išsaugome user ID jei pateiktas
+    if (id?.trim()) {
+      await setId(id);
+    }
+
+    // Refresh token handling
+    if (refreshToken?.trim()) {
+      await setRefreshToken(refreshToken);
+    } else {
+      secureRemove(REFRESH_TOKEN_KEY);
+    }
+
+    // Expiry handling - pataisyta logika
+    if (expiresIn && Number.isFinite(expiresIn) && expiresIn > 0) {
+      const expiryTimestamp = Date.now() + (expiresIn * 1000);
+      await setTokenExpiry(expiryTimestamp);
+    } else {
+      // Jei nėra expiresIn, bandome gauti iš JWT token
+      try {
+        const expiryDate = getExpiryDateFromToken(token);
+        if (expiryDate) {
+          await setTokenExpiry(expiryDate.getTime());
+        } else {
+          secureRemove(TOKEN_EXPIRY_KEY);
+        }
+      } catch {
+        secureRemove(TOKEN_EXPIRY_KEY);
+      }
+    }
+
+    logger.debug('✅ Tokens saved successfully', {
+      hasRefreshToken: !!refreshToken,
+      hasExpiry: !!expiresIn,
+      hasUserId: !!id
+    });
+
+  } catch (error) {
+    logger.error('❌ Failed to save tokens:', error);
+    throw error;
   }
 }
 
-export async function getAllTokens(): Promise<{ accessToken: string | null; refreshToken: string | null; expiry: number | null }> {
+export async function getAllTokens(): Promise<{ 
+  accessToken: string | null; 
+  refreshToken: string | null; 
+  expiry: number | null;
+}> {
   const [a, r, e] = await Promise.all([getAccessToken(), getRefreshToken(), getTokenExpiry()]);
   return { accessToken: a, refreshToken: r, expiry: e };
 }
 
 export function clearTokens(): void {
-  [ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_EXPIRY_KEY].forEach(secureRemove);
+  [ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_EXPIRY_KEY, ID_KEY].forEach(secureRemove);
   cryptoKey = null;
+  logger.debug('🗑️ All tokens cleared');
 }
