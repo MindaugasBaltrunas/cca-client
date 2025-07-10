@@ -1,54 +1,46 @@
 import React, { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Preloader from "../components/Preloader/preloader";
-import { useAuthStatus } from "../../core/authHooks";
+import { useAuth } from "../../context/AuthContext";
 import { ProtectedRoute, TwoFactorRoute, PublicOnlyRoute } from "./RouteComponents";
 
-// Lazy loaded pages
+// 📦 Lazy loaded pages
 const LoginPage = React.lazy(() => import("../pages/loginPage/LoginPage"));
-const TwoFactorSetupPage = React.lazy(() =>
-  import("../components/Auth/TwoFactorAuthSetup/TwoFactorAuthSetup")
-);
-const TwoFactorVerifyPage = React.lazy(() =>
-  import("../components/Auth/TwoFactorVerifyForm/TwoFactorVerifyForm")
-);
+const TwoFactorSetupPage = React.lazy(() => import("../components/Auth/TwoFactorAuthSetup/TwoFactorAuthSetup"));
+const TwoFactorVerifyPage = React.lazy(() => import("../components/Auth/TwoFactorVerifyForm/TwoFactorVerifyForm"));
 const DashboardPage = React.lazy(() => import("../pages/dashboard/dashboard"));
 
-/**
- * Pagrindinis routing komponentas
- * Tvarko visus aplikacijos route'us su autentifikacija
- */
 export const Routing: React.FC = () => {
-  const { isReady } = useAuthStatus();
+  const { isLoading } = useAuth();
 
-  // Rodome preloader kol tikrinama auth būsena
-  if (!isReady) {
+  if (isLoading) {
     return <Preloader isLoading />;
   }
 
   return (
     <Suspense fallback={<Preloader isLoading />}>
       <Routes>
-        {/* Default redirect */}
+        {/* 🏠 Root redirect */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         
-        {/* Public routes - neprisijungusiems */}
+        {/* 🌐 Public routes */}
         <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
         </Route>
         
-        {/* 2FA routes - dviejų faktų autentifikacija */}
+        {/* 🔐 2FA routes */}
         <Route element={<TwoFactorRoute />}>
           <Route path="/2fa-setup" element={<TwoFactorSetupPage />} />
           <Route path="/verify-2fa" element={<TwoFactorVerifyPage />} />
         </Route>
         
-        {/* Protected routes - tik autentifikuotiems */}
+        {/* 🛡️ Protected routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          {/* Add more protected routes here */}
         </Route>
         
-        {/* Catch all redirect - visi nežinomi route'ai */}
+        {/* 🔄 Fallback for unknown routes */}
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Suspense>

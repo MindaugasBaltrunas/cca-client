@@ -12,7 +12,7 @@ import type {
   TwoFactorSetupResponse
 } from '../../shared/types/api.types';
 import { clearTokens, saveTokens } from '../services/tokenStorage';
-import { determineExpiresIn } from '../services/authHelpers';
+import { determineExpiresIn } from './utils/authHelpers';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
 

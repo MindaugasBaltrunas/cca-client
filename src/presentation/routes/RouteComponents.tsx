@@ -1,33 +1,39 @@
 import React from "react";
 import { AuthRoute } from "./AuthRoute";
 
-// Route konfigūracijos
-export const routeConfigs = {
-  protected: {
-    requireFullAuth: true,
-    fallbackPath: "/login"
+// 🎯 Optimized route configurations
+const routeConfigs = {
+  // Full authentication required (token + 2FA)
+  protected: { 
+    requireFullAuth: true, 
+    fallbackPath: "/login" 
   },
-  public: {
-    allowPublic: true,
-    redirectIfAuthenticated: "/dashboard"  
+  
+  // Public access allowed
+  public: { 
+    allowPublic: true, 
+    redirectIfAuthenticated: "/dashboard" 
   },
-  twoFactor: {
-    require2FA: true,
-    requireFullAuth: false
+  
+  // 2FA-specific pages only
+  twoFactor: { 
+    require2FA: true 
   },
-  admin: {
-    requireFullAuth: true,
-    fallbackPath: "/admin-login"
+  
+  // Admin routes (if needed)
+  admin: { 
+    requireFullAuth: true, 
+    fallbackPath: "/admin-login" 
   },
-  guest: {
-    allowPublic: true,
-    redirectIfAuthenticated: "/dashboard"
-  }
+  
+  // Guest routes
+  guest: { 
+    allowPublic: true, 
+    redirectIfAuthenticated: "/dashboard" 
+  },
 } as const;
 
-/**
- * Route komponentai naudojantys routeConfigs
- */
+// 🚀 Typed route components
 export const ProtectedRoute: React.FC = () => (
   <AuthRoute {...routeConfigs.protected} />
 );

@@ -1,36 +1,22 @@
-// context/AuthContext.tsx
 import React, { createContext, useContext, ReactNode } from "react";
-import { useAuthentication } from "../core/authHooks/index";
+import { AuthContextType, useAuthentication } from "../core/authHooks/index";
 
-type AuthContextValue = ReturnType<typeof useAuthentication>;
+const AuthContext = createContext<AuthContextType | null>(null);
 
-const AuthContext = createContext<AuthContextValue | null>(null);
-
-/**
- * Hook'as gauti auth kontekstą
- * Automatiškai tikrina ar yra AuthProvider kontekste
- */
-export const useAuth = (): AuthContextValue => {
+// 🎯 Main auth hook - use this everywhere
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
-  
   if (!context) {
-    throw new Error(
-      "useAuth must be used within an AuthProvider. " +
-        "Make sure the component is wrapped in an AuthProvider."
-    );
+    throw new Error("useAuth must be used within AuthProvider");
   }
-  
   return context;
 };
 
+// 📦 Provider component
 interface AuthProviderProps {
   children: ReactNode;
 }
 
-/**
- * Auth konteksto provider'is
- * Turi būti wrapped aukščiau nei bet kuris komponentas naudojantis auth
- */
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const auth = useAuthentication();
   

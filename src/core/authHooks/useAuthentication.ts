@@ -1,141 +1,178 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import {
-  authApi,
-  IVerify2FAResponse,
-  LoginState,
-  SignUpData,
-} from '../../infrastructure/services';
+import { authApi, IVerify2FAResponse, LoginState, SignUpData } from '../../infrastructure/services';
 import { saveTokens } from '../../infrastructure/services/tokenStorage';
+import { useTokenData } from './useTokenData';
 import { logger } from '../../shared/utils/logger';
-import { Admin, User } from '../../shared/types/api.types';
-import { useTokenData } from './index';
-import { useAuthActions } from './index';
-import type { AuthenticationState, AuthenticationActions } from './types';
+import type { AuthenticationState, AuthenticationActions, AuthContextType, AuthUser } from './types';
 
-/**
- * Comprehensive authentication hook
- * Manages login, registration, 2FA, and user state
- * Integrates with centralized token management
- */
-export const useAuthentication = (): AuthenticationState & AuthenticationActions & {
-  tokenData?: any;
-  loginError: any;
-  registerError: any;
-  verify2FAError: any;
-  setup2FAError: any;
-  enable2FAError: any;
-} => {
-  // Local state for 2FA flow
-  const [requiresTwoFactor, setRequiresTwoFactor] = useState(false);
-  const [twoFactorUserId, setTwoFactorUserId] = useState<string | null>(null);
-  const [currentUser, setCurrentUser] = useState<Admin | User | null>(null);
-  const [enabled, setEnabled] = useState<boolean | undefined>(undefined);
+export const useAuthentication = (): AuthContextType => {
+  // ====================
+  // 📊 STATE MANAGEMENT
+  // ====================
+  
+  const [is2FAFlow, setIs2FAFlow] = useState(false);
+  const [tempUserId, setTempUserId] = useState<string | null>(null);
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState<boolean>();
+  const [needsSetup, setNeedsSetup] = useState(false);
 
-  // Use centralized token data
-  const { data: tokenData, isLoading: isTokenLoading } = useTokenData();
-  const { refreshAuth, clearAuth } = useAuthActions();
+  // 🎯 Centralized token data
+  const { data: tokenData, isLoading: tokenLoading } = useTokenData();
 
-  // Computed authentication states using centralized data
+  // ====================
+  // 🧮 COMPUTED VALUES
+  // ====================
+  
   const isAuthenticated = useMemo(() => {
-    return tokenData?.hasAccessToken ?? false;
-  }, [tokenData?.hasAccessToken]);
+    const hasToken = !!tokenData?.hasAccessToken;
+    const inFlow = is2FAFlow && !!tempUserId;
+    
+    logger.debug('Auth state check:', { hasToken, inFlow, needsSetup });
+    return hasToken || inFlow;
+  }, [tokenData?.hasAccessToken, is2FAFlow, tempUserId, needsSetup]);
 
   const isInTwoFactorFlow = useMemo(() => {
-    const hasToken = tokenData?.hasAccessToken ?? false;
-    const userId = tokenData?.userId || twoFactorUserId;
-    return !!userId && !hasToken && requiresTwoFactor;
-  }, [tokenData?.hasAccessToken, tokenData?.userId, twoFactorUserId, requiresTwoFactor]);
-
-  // Auth state management with cache integration
-  const updateAuthState = useCallback((data: IVerify2FAResponse) => {
-    // Save tokens to storage
-    saveTokens({ token: data.token || '', id: data.userId });
-
-    if (data.token) {
-      setRequiresTwoFactor(false);
-      setTwoFactorUserId(null);
-      if (data.data) {
-        setCurrentUser(data.data);
-      }
-      refreshAuth();
-    } else {
-      setTwoFactorUserId(data.userId ?? null);
+    // Case 1: Has token but needs 2FA setup
+    if (tokenData?.hasAccessToken && needsSetup) {
+      return true;
     }
-  }, [refreshAuth]);
+    
+    // Case 2: Login pending, no token yet
+    if (is2FAFlow && !!tempUserId && !tokenData?.hasAccessToken) {
+      return true;
+    }
+    
+    return false;
+  }, [is2FAFlow, tempUserId, tokenData?.hasAccessToken, needsSetup]);
 
-  const enterTwoFactorFlow = useCallback((userId: string) => {
-    setRequiresTwoFactor(true);
-    setTwoFactorUserId(userId);
-    saveTokens({ token: '', id: userId });
-    // Refresh cache to reflect partial auth state
-    refreshAuth();
-  }, [refreshAuth]);
+  // ====================
+  // 🔧 HELPER FUNCTIONS
+  // ====================
+  
+  const handleAuthSuccess = useCallback((response: {
+    token?: string;
+    userId: string;
+    refreshToken?: string;
+    status?: string;
+    userData?: AuthUser;
+  }) => {
+    logger.debug('Auth success:', response);
+    
+    if (response.token) {
+      saveTokens({ 
+        token: response.token, 
+        id: response.userId 
+      });
+    }
+    
+    // Clear flow states
+    setIs2FAFlow(false);
+    setTempUserId(null);
+    setNeedsSetup(false);
+    
+    // Set user data if provided
+    if (response.userData) {
+      setCurrentUser(response.userData);
+    }
+  }, []);
 
-  const clearAuthState = useCallback(() => {
+  const startTwoFactorFlow = useCallback((userId: string) => {
+    logger.debug('Starting 2FA flow for user:', userId);
+    
+    setIs2FAFlow(true);
+    setTempUserId(userId);
+    setNeedsSetup(false);
+  }, []);
+
+  const resetAuthState = useCallback(() => {
+    logger.debug('Resetting auth state');
+    
     saveTokens({ token: '', id: '' });
-    setRequiresTwoFactor(false);
-    setTwoFactorUserId(null);
+    setIs2FAFlow(false);
+    setTempUserId(null);
     setCurrentUser(null);
-    // Clear all auth cache
-    clearAuth();
-  }, [clearAuth]);
+    setTwoFactorEnabled(undefined);
+    setNeedsSetup(false);
+  }, []);
 
-  // Login mutation with integrated cache management
+  // ====================
+  // 🔄 API MUTATIONS
+  // ====================
+  
   const loginMutation = useMutation({
     mutationFn: authApi.login,
-    onSuccess: (response) => {
-      const { data, status } = response || {};
-      if (!data?.userId) {
-        logger.error('Invalid login response: missing userId');
+    onSuccess: (authResponse) => {
+      
+      // ✅ PATAISYMAS: Naudojame teisingas properties iš AuthResponse
+      // PAKEISKITE ŠIE PROPERTY NAMES PAGAL JŪSŲ TIKRĄ AuthResponse TYPE:
+      const token = authResponse.data?.accessToken;
+      const userId = authResponse.data?.userId;
+      const refreshToken = authResponse.data?.refreshToken;
+      const status = authResponse.status;
+      const enabled = authResponse.data?.enabled;
+
+      console.log('🔍 EXTRACTED VALUES:', { token, userId, refreshToken, status, enabled }); // DEBUG
+
+      if (!userId) {
+        logger.error('Login response missing userId');
         return;
       }
 
-      switch (status) {
-        case 'pending':
-          enterTwoFactorFlow(data.userId);
-          break;
-        case 'success':
-          if (data.accessToken) {
-            setEnabled(data.enabled);
-            updateAuthState({
-              token: data.accessToken,
-              userId: data.userId,
-              refreshToken: data.refreshToken ?? '',
-              status: data.status,
-            });
-          } else {
-            logger.error('Login successful but missing accessToken');
-          }
-          break;
-        default:
-          logger.warn('Unexpected login status:', status);
-          if (data.accessToken) {
-            updateAuthState({
-              token: data.accessToken,
-              userId: data.userId,
-              refreshToken: data.refreshToken ?? '',
-              status: status,
-            });
-          }
+      // Handle different login scenarios
+      if (token &&  status === 'success') {
+        // 🔄 2FA verification needed
+        logger.info('Login pending - 2FA verification required');
+        startTwoFactorFlow(userId);
+        return;
+      }
+
+      if (token) {
+        logger.info('Login successful with token, 2FA enabled:', enabled);
+        setTwoFactorEnabled(enabled);
+        
+        if (enabled === false) {
+          // ✅ Has token but needs 2FA setup
+          logger.info('2FA setup required');
+          saveTokens({ token, id: userId });
+          setNeedsSetup(true);
+        } else {
+          // ✅ Complete authentication
+          logger.info('Full authentication complete');
+          handleAuthSuccess({
+            token,
+            userId,
+            refreshToken,
+            status
+          });
+        }
+      } else {
+        logger.warn('Login response missing token');
       }
     },
     onError: (error) => {
       logger.error('Login failed:', error);
-      clearAuthState();
+      resetAuthState();
     },
   });
 
-  // Registration mutation
   const registerMutation = useMutation({
     mutationFn: authApi.register,
-    onSuccess: (response) => {
-      if (response?.data?.accessToken && response?.data?.userId) {
-        updateAuthState({
-          token: response.data.accessToken,
-          userId: response.data.userId,
-          refreshToken: response.data.refreshToken || '',
-          status: response.status,
+    onSuccess: (authResponse) => {
+      logger.debug('Register response received:', authResponse);
+      
+      // ✅ PATAISYMAS: Adjust property names based on your AuthResponse type
+      const token = (authResponse as any).token || (authResponse as any).accessToken;
+      const userId = (authResponse as any).userId || (authResponse as any).id;
+      const refreshToken = (authResponse as any).refreshToken;
+      const userData = (authResponse as any).user || (authResponse as any).data;
+      
+      if (token && userId) {
+        handleAuthSuccess({
+          token,
+          userId,
+          refreshToken,
+          userData
         });
       }
     },
@@ -144,17 +181,18 @@ export const useAuthentication = (): AuthenticationState & AuthenticationActions
     },
   });
 
-  // 2FA verification mutation
   const verify2FAMutation = useMutation({
     mutationFn: ({ userId, token }: { userId: string; token: string }) =>
       authApi.verify2FA(userId, token),
     onSuccess: (response: IVerify2FAResponse) => {
-      updateAuthState({
+      logger.debug('2FA verification successful:', response);
+      
+      // ✅ PATAISYMAS: Handle IVerify2FAResponse properly
+      handleAuthSuccess({
         token: response.token,
+        userId: response.userId ?? '', // fallback to empty string if undefined
         refreshToken: response.refreshToken,
-        data: response.data,
-        status: response.status,
-        userId: response.userId
+        userData: response.data as AuthUser // Type assertion to fix the error
       });
     },
     onError: (error) => {
@@ -162,7 +200,6 @@ export const useAuthentication = (): AuthenticationState & AuthenticationActions
     },
   });
 
-  // 2FA setup mutation
   const setup2FAMutation = useMutation({
     mutationFn: authApi.setup2FA,
     onSuccess: (response) => {
@@ -173,127 +210,88 @@ export const useAuthentication = (): AuthenticationState & AuthenticationActions
     },
   });
 
-  // 2FA enable mutation
   const enable2FAMutation = useMutation({
     mutationFn: authApi.enable2FA,
-    onSuccess: (response) => {
-      logger.debug('2FA enabled successfully:', response);
-      refreshAuth();
+    onSuccess: () => {
+      logger.info('2FA enabled successfully');
+      setTwoFactorEnabled(true);
+      setNeedsSetup(false);
     },
     onError: (error) => {
       logger.error('2FA enable failed:', error);
     },
   });
 
-  // Public API methods
-  const signIn = useCallback(
-    (credentials: LoginState) => loginMutation.mutateAsync(credentials), 
-    [loginMutation]
-  );
-
-  const signUp = useCallback(
-    (userData: SignUpData) => registerMutation.mutateAsync(userData), 
-    [registerMutation]
-  );
-
-  const verifyTwoFactorAuth = useCallback(
-    async (userId: string, token: string): Promise<IVerify2FAResponse | null> => {
-      try {
-        const response = await verify2FAMutation.mutateAsync({ userId, token });
-        return {
-          token: response.token,
-          refreshToken: response.refreshToken || response.token,
-          data: response.data,
-          status: response.status,
-          userId: response.userId
-        };
-      } catch (error) {
-        logger.error('2FA verification failed:', error);
-        return null;
-      }
-    },
-    [verify2FAMutation]
-  );
-
-  const setupTwoFactorAuth = useCallback(async () => {
-    try {
-      return await setup2FAMutation.mutateAsync();
-    } catch (error: any) {
-      if (error.status === 429) {
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        throw new Error('Rate limited. Please wait before trying again.');
-      }
-      throw error;
-    }
-  }, [setup2FAMutation]);
-
-  const enableTwoFactorAuth = useCallback(
-    (token: string) => enable2FAMutation.mutateAsync(token), 
-    [enable2FAMutation]
-  );
-
-  const logout = useCallback(() => {
-    clearAuthState();
-  }, [clearAuthState]);
-
-  // Aggregate loading and error states
-  const mutations = useMemo(() => [
-    loginMutation, 
-    registerMutation, 
-    verify2FAMutation, 
-    setup2FAMutation, 
-    enable2FAMutation
-  ], [loginMutation, registerMutation, verify2FAMutation, setup2FAMutation, enable2FAMutation]);
-
-  const isLoading = isTokenLoading || mutations.some(m => m.isPending);
-  const error = mutations.find(m => m.error)?.error;
-
-  const clearErrors = useCallback(() => {
-    mutations.forEach(m => m.reset());
-  }, [mutations]);
-
+  // ====================
+  // 🎯 PUBLIC API
+  // ====================
+  
   const getCurrentUserId = useCallback(() => {
-    return tokenData?.userId || twoFactorUserId;
-  }, [tokenData?.userId, twoFactorUserId]);
+    return tokenData?.userId || tempUserId;
+  }, [tokenData?.userId, tempUserId]);
 
+  const clearAllErrors = useCallback(() => {
+    [loginMutation, registerMutation, verify2FAMutation, 
+     setup2FAMutation, enable2FAMutation].forEach(mutation => {
+      mutation.reset();
+    });
+  }, [loginMutation, registerMutation, verify2FAMutation, setup2FAMutation, enable2FAMutation]);
+
+  const verifyTwoFactorAuth = useCallback(async (userId: string, token: string) => {
+    try {
+      const response = await verify2FAMutation.mutateAsync({ userId, token });
+      return response;
+    } catch (error) {
+      logger.error('2FA verification failed:', error);
+      return null;
+    }
+  }, [verify2FAMutation]);
+
+  // ====================
+  // 📊 LOADING & ERROR STATES
+  // ====================
+  
+  const isLoading = tokenLoading || [
+    loginMutation, registerMutation, verify2FAMutation, 
+    setup2FAMutation, enable2FAMutation
+  ].some(mutation => mutation.isPending);
+
+  const firstError = [loginMutation, registerMutation, verify2FAMutation].find(
+    mutation => mutation.error
+  )?.error;
+
+  // ====================
+  // 🎁 RETURN OBJECT
+  // ====================
+  
   return {
-    // User state
+    // Core state
     user: currentUser,
+    enabled: twoFactorEnabled,
     isAuthenticated,
     isInTwoFactorFlow,
-    requiresTwoFactor,
-    
-    // Loading and error states
+    requiresTwoFactor: is2FAFlow || needsSetup,
     isLoading,
-    error,
+    error: firstError,
 
-    // Utility methods
-    getCurrentUserId,
-
-    // Auth actions
-    signIn,
-    signUp,
+    // Actions
+    signIn: loginMutation.mutateAsync,
+    signUp: registerMutation.mutateAsync,
     verifyTwoFactorAuth,
-    setupTwoFactorAuth,
-    enableTwoFactorAuth,
-    logout,
-    clearErrors,
+    setupTwoFactorAuth: setup2FAMutation.mutateAsync,
+    enableTwoFactorAuth: enable2FAMutation.mutateAsync,
+    logout: resetAuthState,
+    clearErrors: clearAllErrors,
+    getCurrentUserId,
+    enterTwoFactorFlow: startTwoFactorFlow,
+    clearAuthState: resetAuthState,
 
-    // Internal methods (for advanced use)
-    enterTwoFactorFlow,
-    clearAuthState,
-
-    //2fa 
-    enabled,
-
-    // Individual mutation errors
+    // Additional data
+    tokenData,
     loginError: loginMutation.error,
     registerError: registerMutation.error,
     verify2FAError: verify2FAMutation.error,
     setup2FAError: setup2FAMutation.error,
     enable2FAError: enable2FAMutation.error,
-
-    // Token data (from centralized management)
-    tokenData,
   };
 };

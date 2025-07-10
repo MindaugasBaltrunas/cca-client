@@ -9,7 +9,6 @@ export interface TokenData {
 export interface AuthStatus {
   isReady: boolean;
   isLoggedIn: boolean;
-  tokenValid: boolean;
   tokenData?: TokenData;
   isLoading: boolean;
   enabled?: boolean;
@@ -19,9 +18,8 @@ export interface RouteAuthStatus {
   isReady: boolean;
   isLoggedIn: boolean;
   hasUserId: boolean;
-  canAccess2FA: boolean;
-  shouldRedirectTo2FA: boolean;
   enabled?: boolean;
+  token?: string;
 }
 
 export interface AuthUser {
@@ -50,7 +48,7 @@ export interface AuthenticationActions {
   logout: () => void;
   clearErrors: () => void;
   getCurrentUserId: () => string | null;
-  enterTwoFactorFlow: (userId: string) => void;
+  enterTwoFactorFlow: (userId: string, token: string) => void;
   clearAuthState: () => void;
 }
 

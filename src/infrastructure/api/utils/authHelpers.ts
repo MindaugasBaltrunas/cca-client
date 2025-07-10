@@ -1,7 +1,7 @@
-import { logger } from '../../shared/utils/logger';
-import { EventBus } from '../../shared/utils/eventBus';
-import { saveTokens } from '../services/tokenStorage';
-import type { AuthResponse } from '../services/types';
+import { logger } from '../../../shared/utils/logger';
+import { EventBus } from '../../../shared/utils/eventBus';
+import { saveTokens } from '../../services/tokenStorage';
+import type { AuthResponse } from '../../services/types';
 
 /**
  * Utility funkcija apskaičiuoti expiresIn iš expiresAt
@@ -60,7 +60,7 @@ export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void
  * Debugging helper
  */
 export const debugTokenData = async () => {
-  const { getAllTokens, getId, isTokenExpired } = await import('../services/tokenStorage');
+  const { getAllTokens, getId, isTokenExpired } = await import('../../services/tokenStorage');
   const tokens = await getAllTokens();
   const userId = await getId();
   const isExpired = await isTokenExpired();
