@@ -1,7 +1,8 @@
 import { logger } from '../../../shared/utils/logger';
 import { EventBus } from '../../../shared/utils/eventBus';
 import { saveTokens } from '../../services/tokenStorage';
-import type { AuthResponse } from '../../services/types';
+import { AuthResponse } from '../../../shared/types/api.types';
+
 
 /**
  * Utility funkcija apskaičiuoti expiresIn iš expiresAt

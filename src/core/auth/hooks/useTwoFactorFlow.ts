@@ -5,7 +5,7 @@ export const useTwoFactorFlow = () => {
   const [tempUserId, setTempUserId] = useState<string | null>(null);
   const [twoFactorEnabled, setTwoFactorEnabled] = useState<boolean>();
   const [needsSetup, setNeedsSetup] = useState(false);
-
+    
   const isInTwoFactorFlow = useMemo(() => {
     return is2FAFlow && !!tempUserId;
   }, [is2FAFlow, tempUserId]);

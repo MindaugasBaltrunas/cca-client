@@ -1,21 +1,12 @@
-import { API_CONFIG } from '../../shared/config/apiConfig';
-import { http } from '../../shared/http';
-import { sanitizeString } from '../services/xssGuard';
-import { logger } from '../../shared/utils/logger';
+import http, { API_CONFIG } from '../../shared/http';
+import { AuthResponse, IVerify2FAResponse, LoginState, SignUpData, TwoFactorSetupResponse } from '../../shared/types/api.types';
 import { EventBus } from '../../shared/utils/eventBus';
-
-import type {
-  AuthResponse,
-  IVerify2FAResponse,
-  LoginState,
-  SignUpData,
-  TwoFactorSetupResponse
-} from '../../shared/types/api.types';
+import { logger } from '../../shared/utils/logger';
+import { sanitizeString } from '../services';
 import { clearTokens, saveTokens } from '../services/tokenStorage';
 import { determineExpiresIn } from './utils/authHelpers';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
-
   if (response.status === 'success' && response.data) {
     const { accessToken, refreshToken, userId, expiresAt } = response.data;
 
@@ -38,88 +29,6 @@ const handleApiError = (error: unknown, context: string): AuthResponse => {
   };
 };
 
-export const login = async (credentials: LoginState): Promise<AuthResponse> => {
-  try {
-    const response = await http.post(
-      API_CONFIG.ENDPOINTS.AUTH.SIGN_IN,
-      credentials
-    );
-    await handleSuccessfulAuth(response.data);
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, 'Login error');
-  }
-};
-
-export const adminLogin = async (
-  credentials: LoginState & { adminPassword: string }
-): Promise<AuthResponse> => {
-  try {
-    logger.debug('Attempting admin login');
-    const response = await http.post(
-      API_CONFIG.ENDPOINTS.AUTH.ADMIN_SIGN_IN,
-      credentials
-    );
-    await handleSuccessfulAuth(response.data);
-    if (response.data.status === 'success') {
-      EventBus.emit('auth:adminLogin', response.data);
-    }
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, 'Admin login error');
-  }
-};
-
-export const register = async (userData: SignUpData): Promise<AuthResponse> => {
-  try {
-    logger.debug('Attempting user registration');
-    const response = await http.post(
-      API_CONFIG.ENDPOINTS.AUTH.SIGN_UP,
-      userData
-    );
-    await handleSuccessfulAuth(response.data);
-    if (response.data.status === 'success') {
-      EventBus.emit('auth:register', response.data);
-    }
-    return response.data;
-  } catch (error) {
-    return handleApiError(error, 'Registration error');
-  }
-};
-
-export const logout = async (userId: string): Promise<AuthResponse> => {
-  try {
-    logger.debug('Attempting user logout');
-    const safeUserId = sanitizeString(userId);
-    const response = await http.post(
-      API_CONFIG.ENDPOINTS.AUTH.SIGN_OUT,
-      { userId: safeUserId }
-    );
-    clearTokens();
-    EventBus.emit('auth:logout');
-    return response.data;
-  } catch (error) {
-    clearTokens();
-    EventBus.emit('auth:logout');
-    return handleApiError(error, 'Logout error');
-  }
-};
-
-
-export const setup2FA = async (): Promise<TwoFactorSetupResponse> => {
-  try {
-    logger.debug('Setting up 2FA');
-    const response = await http.post(
-      API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.SETUP,
-      {}
-    );
-    return response.data;
-  } catch (error) {
-    logger.error('2FA setup error:', error);
-    throw error;
-  }
-};
-
 const process2FAOperation = async (
   token: string,
   endpoint: string,
@@ -139,35 +48,85 @@ const process2FAOperation = async (
   }
 };
 
+export const login = async (credentials: LoginState): Promise<AuthResponse> => {
+  try {
+    const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.SIGN_IN, credentials);
+    await handleSuccessfulAuth(response.data);
+    return response.data;
+  } catch (error) {
+    return handleApiError(error, 'Login error');
+  }
+};
+
+export const adminLogin = async (
+  credentials: LoginState & { adminPassword: string }
+): Promise<AuthResponse> => {
+  try {
+    logger.debug('Attempting admin login');
+    const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.ADMIN_SIGN_IN, credentials);
+    await handleSuccessfulAuth(response.data);
+    if (response.data.status === 'success') {
+      EventBus.emit('auth:adminLogin', response.data);
+    }
+    return response.data;
+  } catch (error) {
+    return handleApiError(error, 'Admin login error');
+  }
+};
+
+export const register = async (userData: SignUpData): Promise<AuthResponse> => {
+  try {
+    logger.debug('Attempting user registration');
+    const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.SIGN_UP, userData);
+    await handleSuccessfulAuth(response.data);
+    if (response.data.status === 'success') {
+      EventBus.emit('auth:register', response.data);
+    }
+    return response.data;
+  } catch (error) {
+    return handleApiError(error, 'Registration error');
+  }
+};
+
+export const logout = async (userId: string): Promise<AuthResponse> => {
+  try {
+    logger.debug('Attempting user logout');
+    const safeUserId = sanitizeString(userId);
+    const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.SIGN_OUT, { userId: safeUserId });
+    clearTokens();
+    EventBus.emit('auth:logout');
+    return response.data;
+  } catch (error) {
+    clearTokens();
+    EventBus.emit('auth:logout');
+    return handleApiError(error, 'Logout error');
+  }
+};
+
+export const setup2FA = async (): Promise<TwoFactorSetupResponse> => {
+  try {
+    logger.debug('Setting up 2FA');
+    const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.SETUP, {});
+    return response.data;
+  } catch (error) {
+    logger.error('2FA setup error:', error);
+    throw error;
+  }
+};
+
 export const enable2FA = (token: string): Promise<AuthResponse> =>
-  process2FAOperation(
-    token,
-    API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.ENABLE,
-    'auth:2faEnabled',
-    '2FA enable error'
-  );
+  process2FAOperation(token, API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.ENABLE, 'auth:2faEnabled', '2FA enable error');
 
-export const disable2FA = (token: string) =>
-  process2FAOperation(
-    token,
-    API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.DISABLE,
-    'auth:2faDisabled',
-    '2FA disable error'
-  );
+export const disable2FA = (token: string): Promise<AuthResponse> =>
+  process2FAOperation(token, API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.DISABLE, 'auth:2faDisabled', '2FA disable error');
 
-export const verify2FA = async (
-  userId: string,
-  token: string
-): Promise<IVerify2FAResponse> => {
+export const verify2FA = async (userId: string, token: string): Promise<IVerify2FAResponse> => {
   try {
     logger.debug('Verifying 2FA token');
-    const response = await http.post(
-      API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.VERIFY,
-      {
-        userId: sanitizeString(userId),
-        token: sanitizeString(token)
-      }
-    );
+    const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.VERIFY, {
+      userId: sanitizeString(userId),
+      token: sanitizeString(token)
+    });
     if (response.data.status === 'success' && response.data.data) {
       const { accessToken, refreshToken } = response.data.data;
       await saveTokens({ token: accessToken, refreshToken });
@@ -183,10 +142,7 @@ export const verify2FA = async (
 export const refreshToken = async (rt: string): Promise<AuthResponse> => {
   try {
     logger.debug('Refreshing authentication token');
-    const response = await http.post(
-      API_CONFIG.ENDPOINTS.AUTH.REFRESH_TOKEN,
-      { refreshToken: sanitizeString(rt) }
-    );
+    const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.REFRESH_TOKEN, { refreshToken: sanitizeString(rt) });
     return response.data;
   } catch (error) {
     return handleApiError(error, 'Token refresh error');

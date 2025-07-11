@@ -27,14 +27,14 @@ export const useAuthentication = (): AuthContextType => {
     resetTwoFactorFlow,
   } = useTwoFactorFlow();
 
+  logger.debug('useAuthentication initialized', {twoFactorEnabled});
+
   const handleAuthSuccess = useCallback((response: {
     token?: string;
     userId: string;
     refreshToken?: string;
     userData?: AuthUser;
   }) => {
-    logger.debug('Auth success:', response);
-
     if (response.token) {
       saveTokens({ token: response.token, id: response.userId });
     }
