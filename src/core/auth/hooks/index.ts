@@ -1,12 +1,12 @@
 export { useTokenData } from './useTokenData';
 export { useAccessToken } from './useAccessToken';
-export { useAsyncAuthentication } from './useAsyncAuthentication';
+// export { useAsyncAuthentication } from './useAsyncAuthentication';
 
 // Authentication hooks
 export { useAuthentication } from './useAuthentication';
 
 // Utility hooks
-export { useAuthActions } from './useAuthActions';
+// export { useAuthActions } from './useAuthActions';
 
 // Types
 export type { 
@@ -17,4 +17,4 @@ export type {
   AuthenticationState,
   AuthenticationActions,
   AuthContextType 
-} from './types';
+} from '../types/auth.types';

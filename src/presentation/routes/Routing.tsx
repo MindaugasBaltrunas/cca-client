@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Preloader from "../components/Preloader/preloader";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../core/auth/context/AuthContext";
 import { ProtectedRoute, TwoFactorRoute, PublicOnlyRoute } from "./RouteComponents";
 
 // 📦 Lazy loaded pages

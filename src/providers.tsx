@@ -4,7 +4,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { BrowserRouter as Router } from "react-router-dom";
 import { FormikProvider } from "./shared/providers/formik/formikProvider";
 import { PaginationProvider } from "./shared/providers/paginationProvider";
-import { AuthProvider } from "./context/AuthContext";
+import { AuthProvider } from "./core/auth/context/AuthContext";
 
 const queryClient = new QueryClient({
   defaultOptions: {

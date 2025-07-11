@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../../../context/AuthContext"; 
+import { useAuth } from "../../../core/auth/context/AuthContext"; 
 
 const TwoFactorDisableForm: React.FC = () => {
   const {  setupTwoFactorAuth, error, isLoading } = useAuth();

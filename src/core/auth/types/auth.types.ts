@@ -61,6 +61,15 @@ export interface AuthContextType extends AuthenticationState, AuthenticationActi
   enable2FAError: any;
 }
 
-export type AuthTokenData = {
-  hasAccessToken?: boolean;
-};
+export interface BaseCredentials {
+  email: string;
+  password: string;
+}
+
+export interface LoginState extends BaseCredentials {}
+
+export interface SignUpData extends BaseCredentials {
+  confirmPassword?: string;
+  firstName?: string;
+  lastName?: string;
+}

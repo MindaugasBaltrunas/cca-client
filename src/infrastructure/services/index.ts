@@ -11,16 +11,6 @@ export {
   sanitizeUrl
 } from './xssGuard';
 
-export type {
-  SignUpData,
-  LoginState,
-  AuthResponse,
-  IVerify2FAResponse,
-  TwoFactorSetupResponse,
-  ApiError,
-  TokenInfo
-} from '../../shared/types/api.types';
-
 export const safeDisplay = {
   text: (value: string | number | undefined | null): string => {
     if (value === undefined || value === null) return '';

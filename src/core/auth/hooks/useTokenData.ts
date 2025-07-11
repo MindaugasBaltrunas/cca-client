@@ -1,12 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAccessToken, getId } from "../../infrastructure/services/tokenStorage";
-import type { TokenData } from "./types";
-import { logger } from "../../shared/utils/logger";
+import { getAccessToken, getId } from "../../../infrastructure/services/tokenStorage";
+import type { TokenData } from "../types/auth.types";
 
-/**
- * Core hook for managing all token-related data.
- * Consolidates token and user ID fetching into a single query.
- */
 export const useTokenData = () => {
   const fetchTokenData = async (): Promise<TokenData> => {
     try {
@@ -18,7 +13,6 @@ export const useTokenData = () => {
       const hasAccessToken = Boolean(accessToken);
       const hasUserId = Boolean(userId);
       const hasValidToken = hasAccessToken && hasUserId;
-      logger.debug("Token data fetched:", { hasUserId, hasAccessToken, hasValidToken, accessToken, userId });
       return {
         accessToken,
         userId,

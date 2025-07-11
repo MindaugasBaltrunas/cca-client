@@ -3,12 +3,12 @@ import { Form, Formik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { NavLink } from "react-router-dom";
 
-import { useAuth } from "../../../context/AuthContext";
+import { useAuth } from "../../../core/auth/context/AuthContext";
 import FormInput from "../../components/InputFields/FormInput";
 import Preloader from "../../components/Preloader/preloader";
 import styles from "./login.module.scss";
-import { LoginState } from "../../../infrastructure/services";
 import { logger } from "../../../shared/utils/logger";
+import { LoginState } from "../../../shared/types/api.types";
 
 const validationSchema = Yup.object({
   email: Yup.string()

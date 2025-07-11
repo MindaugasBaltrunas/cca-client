@@ -1,17 +1,3 @@
-
-export interface SignUpData {
-  email: string;
-  password: string;
-  confirmPassword?: string;
-  firstName?: string;
-  lastName?: string;
-}
-
-export interface LoginState {
-  email: string;
-  password: string;
-}
-
 export interface AuthResponse {
   status: 'success' | 'error' | 'pending';
   message?: string;
@@ -25,25 +11,35 @@ export interface AuthResponse {
   };
 }
 
-interface BaseUser {
+export interface BaseCredentials {
+  email: string;
+  password: string;
+}
+
+export interface LoginState extends BaseCredentials {}
+
+export interface SignUpData extends BaseCredentials {
+  confirmPassword?: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+export type UserRole = 'admin' | 'user';
+
+export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
-  adminPassword: string;
+  adminPassword?: string; 
 }
-export interface Admin extends BaseUser {}
-
-export interface User extends BaseUser {}
-
-export type UserRole = 'admin' | 'user';
 
 export interface IVerify2FAResponse {
   userId?: string | undefined;
   token: string;
   refreshToken: string;
   status: string;
-  data?: Admin | User;
+  data?: User; 
   enabled?: boolean;
 }
 

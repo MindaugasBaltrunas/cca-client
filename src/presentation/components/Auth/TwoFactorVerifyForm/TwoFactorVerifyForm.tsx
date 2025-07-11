@@ -1,7 +1,7 @@
 import React from "react";
 import { Formik } from "formik";
 import { useNavigate, useLocation } from "react-router-dom";
-import { useAuth } from "../../../../context/AuthContext";
+import { useAuth } from "../../../../core/auth/context/AuthContext";
 import { getId } from "../../../../infrastructure/services/tokenStorage";
 import { validationSchema, initialValues } from "./formSchema";
 import { TwoFactorFormContent } from "./TwoFactorFormContent";

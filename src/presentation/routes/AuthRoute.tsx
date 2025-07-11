@@ -1,7 +1,7 @@
 import React from "react";
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 import Preloader from "../components/Preloader/preloader";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../core/auth/context/AuthContext";
 
 export interface AuthRouteProps {
   fallbackPath?: string;
