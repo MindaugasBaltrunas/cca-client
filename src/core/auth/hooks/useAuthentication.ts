@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import { useAuthState } from './useAuthState';
 import { useTwoFactorFlow } from './useTwoFactorFlow';
 import { useAuthMutations } from './useAuthMutations';
@@ -6,7 +7,18 @@ import { AuthUser, AuthContextType } from './index';
 import { logger } from '../../../shared/utils/logger';
 import { saveTokens } from '../../../infrastructure/services/tokenStorage';
 
+const updateTokenQueryCache = (queryClient: QueryClient, token: string, userId: string) => {
+  queryClient.setQueryData(['auth-tokens'], {
+    accessToken: token,
+    userId,
+    hasAccessToken: !!token,
+    hasUserId: !!userId,
+    hasValidToken: !!token && !!userId,
+  });
+};
+
 export const useAuthentication = (): AuthContextType => {
+  const queryClient = useQueryClient();
   const {
     currentUser,
     setCurrentUser,
@@ -27,16 +39,17 @@ export const useAuthentication = (): AuthContextType => {
     resetTwoFactorFlow,
   } = useTwoFactorFlow();
 
-  logger.debug('useAuthentication initialized', {twoFactorEnabled});
+  logger.debug('useAuthentication initialized', { twoFactorEnabled });
 
-  const handleAuthSuccess = useCallback((response: {
+  const handleAuthSuccess = useCallback(async (response: {
     token?: string;
     userId: string;
     refreshToken?: string;
     userData?: AuthUser;
   }) => {
     if (response.token) {
-      saveTokens({ token: response.token, id: response.userId });
+      await saveTokens({ token: response.token, id: response.userId });
+      updateTokenQueryCache(queryClient, response.token, response.userId);
     }
 
     resetTwoFactorFlow();
@@ -44,14 +57,15 @@ export const useAuthentication = (): AuthContextType => {
     if (response.userData) {
       setCurrentUser(response.userData);
     }
-  }, [resetTwoFactorFlow, setCurrentUser]);
+  }, [queryClient, resetTwoFactorFlow, setCurrentUser]);
 
-  const resetAuthState = useCallback(() => {
+  const resetAuthState = useCallback(async () => {
     logger.debug('Resetting auth state');
-    saveTokens({ token: '', id: '' });
+    await saveTokens({ token: '', id: '' });
+    await queryClient.invalidateQueries({ queryKey: ['auth-tokens'], exact: true });
     resetTwoFactorFlow();
     setCurrentUser(null);
-  }, [resetTwoFactorFlow, setCurrentUser]);
+  }, [queryClient, resetTwoFactorFlow, setCurrentUser]);
 
   const {
     loginMutation,
@@ -94,8 +108,7 @@ export const useAuthentication = (): AuthContextType => {
 
   const verifyTwoFactorAuth = useCallback(async (userId: string, token: string) => {
     try {
-      const response = await verify2FAMutation.mutateAsync({ userId, token });
-      return response;
+      return await verify2FAMutation.mutateAsync({ userId, token });
     } catch (error) {
       logger.error('2FA verification failed:', error);
       return null;
@@ -110,7 +123,6 @@ export const useAuthentication = (): AuthContextType => {
     requiresTwoFactor: is2FAFlow || needsSetup,
     isLoading,
     error: firstError,
-
     signIn: loginMutation.mutateAsync,
     signUp: registerMutation.mutateAsync,
     verifyTwoFactorAuth,
@@ -121,7 +133,6 @@ export const useAuthentication = (): AuthContextType => {
     getCurrentUserId,
     enterTwoFactorFlow: startTwoFactorFlow,
     clearAuthState: resetAuthState,
-
     tokenData,
     loginError: loginMutation.error,
     registerError: registerMutation.error,

@@ -7,7 +7,7 @@ export const useTokenData = () => {
     try {
       const [accessToken, userId] = await Promise.all([
         getAccessToken(),
-        Promise.resolve(getId())
+        getId(),
       ]);
 
       const hasAccessToken = Boolean(accessToken);
@@ -18,7 +18,7 @@ export const useTokenData = () => {
         userId,
         hasAccessToken,
         hasUserId,
-        hasValidToken
+        hasValidToken,
       };
     } catch {
       return {
@@ -26,21 +26,18 @@ export const useTokenData = () => {
         userId: null,
         hasAccessToken: false,
         hasUserId: false,
-        hasValidToken: false
+        hasValidToken: false,
       };
     }
   };
 
-  const query = useQuery({
+  return useQuery({
     queryKey: ['auth-tokens'],
     queryFn: fetchTokenData,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000,   // 10 minutes
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
     retry: 1,
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
   });
-
-  return {
-    ...query
-  };
 };

@@ -3,7 +3,6 @@ import { AuthContextType, useAuthentication } from "../hooks/index";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-// 🎯 Main auth hook - use this everywhere
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
@@ -12,7 +11,6 @@ export const useAuth = (): AuthContextType => {
   return context;
 };
 
-// 📦 Provider component
 interface AuthProviderProps {
   children: ReactNode;
 }

@@ -3,12 +3,10 @@ import { useState, useMemo, useCallback } from 'react';
 export const useTwoFactorFlow = () => {
   const [is2FAFlow, setIs2FAFlow] = useState(false);
   const [tempUserId, setTempUserId] = useState<string | null>(null);
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState<boolean>();
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [needsSetup, setNeedsSetup] = useState(false);
-    
-  const isInTwoFactorFlow = useMemo(() => {
-    return is2FAFlow && !!tempUserId;
-  }, [is2FAFlow, tempUserId]);
+
+  const isInTwoFactorFlow = useMemo(() => is2FAFlow && !!tempUserId, [is2FAFlow, tempUserId]);
 
   const startTwoFactorFlow = useCallback((userId: string) => {
     setIs2FAFlow(true);
@@ -19,7 +17,7 @@ export const useTwoFactorFlow = () => {
   const resetTwoFactorFlow = useCallback(() => {
     setIs2FAFlow(false);
     setTempUserId(null);
-    setTwoFactorEnabled(undefined);
+    setTwoFactorEnabled(false);
     setNeedsSetup(false);
   }, []);
 

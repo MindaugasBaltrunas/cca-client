@@ -27,8 +27,8 @@ interface AppProviderProps {
 const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <Router>
+      <Router>
+        <AuthProvider>
           <FormikProvider
             config={{
               validateOnBlur: true,
@@ -36,12 +36,10 @@ const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
               validateOnMount: false,
             }}
           >
-            <PaginationProvider>
-              {children}
-            </PaginationProvider>
+            <PaginationProvider>{children}</PaginationProvider>
           </FormikProvider>
-        </Router>
-      </AuthProvider>
+        </AuthProvider>
+      </Router>
       {process.env.NODE_ENV === "development" && (
         <ReactQueryDevtools initialIsOpen={false} position="bottom" />
       )}

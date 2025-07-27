@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import Preloader from "../components/Preloader/preloader";
 import { useAuth } from "../../core/auth/context/AuthContext";
 import { ProtectedRoute, TwoFactorRoute, PublicOnlyRoute } from "./RouteComponents";
+import { log } from "console";
+import { logger } from "../../shared/utils/logger";
 
 // 📦 Lazy loaded pages
 const LoginPage = React.lazy(() => import("../pages/loginPage/LoginPage"));
@@ -11,9 +13,11 @@ const TwoFactorVerifyPage = React.lazy(() => import("../components/Auth/TwoFacto
 const DashboardPage = React.lazy(() => import("../pages/dashboard/dashboard"));
 
 export const Routing: React.FC = () => {
-  const { isLoading } = useAuth();
+  const { isLoading, tokenData } = useAuth();
 
-  if (isLoading) {
+  logger.debug("Routing initialized", { isLoading, tokenData });
+
+  if (isLoading || tokenData === null) {
     return <Preloader isLoading />;
   }
 

@@ -27,14 +27,14 @@ export const useAuthMutations = ({
       const status = authResponse.status;
       const enabled = authResponse.data?.enabled;
 
-       logger.debug('Login response:', { 
-        hasToken: !!token, 
-        status, 
-        enabled, 
-        userId 
+      logger.debug('Login response:', {
+        hasToken: !!token,
+        status,
+        enabled,
+        userId
       });
 
-     if (!userId) {
+      if (!userId) {
         logger.error('Login response missing userId');
         return;
       }
@@ -44,19 +44,36 @@ export const useAuthMutations = ({
         return;
       }
 
-      setTwoFactorEnabled(enabled ?? false);
+      setTwoFactorEnabled(enabled ? true : false);
 
-      if (status === 'success') {
-        if (!enabled) {
-          startTwoFactorFlow(userId);
-        } else {
-          saveTokens({ token, id: userId, refreshToken });
-          setNeedsSetup(true);
-          handleAuthSuccess({ token, userId, refreshToken, status });
-        }
-      } else {
+      const isSuccess = status === 'success';
+      const needsTwoFactorSetup = isSuccess && !enabled;
+      const canCompleteLogin = isSuccess && enabled;
+
+      if (!isSuccess) {
         logger.warn('Login status not success:', status);
         resetAuthState();
+      }
+
+      if (needsTwoFactorSetup) {
+        startTwoFactorFlow(userId);
+      }
+
+      if (canCompleteLogin) {
+        saveTokens({
+          token,
+          id: userId,
+          refreshToken
+        });
+
+        setNeedsSetup(!enabled);
+
+        handleAuthSuccess({
+          token,
+          userId,
+          refreshToken,
+          status
+        });
       }
     },
     onError: (error) => {

@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTokenData } from './useTokenData';
 import { AuthUser } from './index';
 
@@ -7,8 +7,14 @@ export const useAuthState = () => {
   const { data: tokenData, isLoading: tokenLoading } = useTokenData();
 
   const isAuthenticated = useMemo(() => {
-    return !!tokenData?.hasAccessToken;
-  }, [tokenData?.hasAccessToken]);
+    return !!tokenData?.hasValidToken;
+  }, [tokenData?.hasValidToken]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setCurrentUser(null);
+    }
+  }, [isAuthenticated]);
 
   return {
     currentUser,
