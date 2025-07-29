@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode } from "react";
 import { AuthContextType, useAuthentication } from "../hooks/index";
+import { logger } from "../../../shared/utils/logger";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 

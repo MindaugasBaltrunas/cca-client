@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useTokenData } from './useTokenData';
+import { useTokenData } from './index';
 import { AuthUser } from './index';
 
 export const useAuthState = () => {

@@ -1,6 +1,4 @@
 export { useTokenData } from './useTokenData';
-export { useAccessToken } from './useAccessToken';
-
 export { useAuthentication } from './useAuthentication';
 
 export type { 

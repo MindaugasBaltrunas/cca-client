@@ -9,12 +9,12 @@ import { AuthResponse } from '../../../shared/types/api.types';
  */
 export const determineExpiresIn = (expiresAt?: number): number => {
   if (!expiresAt) return 0;
-  
+
   // Jei expiresAt atrodo kaip timestamp (didelis skaičius > 1B)
   if (expiresAt > 1000000000) {
     return Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
   }
-  
+
   // Jei expiresAt atrodo kaip duration sekundėmis
   return Math.max(0, expiresAt);
 };
@@ -34,7 +34,7 @@ export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void
     if (!accessToken?.trim()) {
       throw new Error('Access token is missing');
     }
-    
+
     if (!userId?.trim()) {
       throw new Error('User ID is missing');
     }
@@ -45,7 +45,8 @@ export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void
       token: accessToken,
       refreshToken: refreshToken || undefined,
       expiresIn: expiresIn > 0 ? expiresIn : undefined,
-      id: userId
+      id: userId,
+      enable: true
     });
 
     EventBus.emit('auth:login', response);
@@ -65,7 +66,7 @@ export const debugTokenData = async () => {
   const tokens = await getAllTokens();
   const userId = await getId();
   const isExpired = await isTokenExpired();
-  
+
   console.log('🔍 Current token state:', {
     hasAccessToken: !!tokens.accessToken,
     hasRefreshToken: !!tokens.refreshToken,

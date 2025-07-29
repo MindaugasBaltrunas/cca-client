@@ -4,6 +4,7 @@ export interface TokenData {
   hasValidToken: boolean;
   hasAccessToken: boolean;
   hasUserId: boolean;
+  enable: boolean;
 }
 
 export interface AuthStatus {
@@ -11,10 +12,9 @@ export interface AuthStatus {
   isLoggedIn: boolean;
   tokenData?: TokenData;
   isLoading: boolean;
-  enabled?: boolean;
 }
 
-export interface RouteAuthStatus {  
+export interface RouteAuthStatus {
   isReady: boolean;
   isLoggedIn: boolean;
   hasUserId: boolean;
@@ -47,18 +47,19 @@ export interface AuthenticationActions {
   enableTwoFactorAuth: (token: string) => Promise<any>;
   logout: () => void;
   clearErrors: () => void;
-  getCurrentUserId: () => string | null;
+  // getCurrentUserId: () => string | null;
   enterTwoFactorFlow: (userId: string, token: string) => void;
   clearAuthState: () => void;
 }
 
-export interface AuthContextType extends AuthenticationState, AuthenticationActions {
-  tokenData?: TokenData;
+export interface AuthContextType extends  AuthenticationActions {
   loginError: any;
   registerError: any;
   verify2FAError: any;
   setup2FAError: any;
   enable2FAError: any;
+  error: any;
+  isLoading: boolean;
 }
 
 export interface BaseCredentials {
@@ -66,7 +67,7 @@ export interface BaseCredentials {
   password: string;
 }
 
-export interface LoginState extends BaseCredentials {}
+export interface LoginState extends BaseCredentials { }
 
 export interface SignUpData extends BaseCredentials {
   confirmPassword?: string;

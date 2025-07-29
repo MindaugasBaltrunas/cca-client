@@ -10,7 +10,7 @@ const createTokenRefreshService = () => {
     refreshSubscribers.push(callback);
   };
 
-   const onTokenRefreshed = (token: string): void => {
+  const onTokenRefreshed = (token: string): void => {
     refreshSubscribers.forEach(callback => callback(token));
     refreshSubscribers = [];
   };
@@ -32,25 +32,26 @@ const createTokenRefreshService = () => {
     refreshTokenApi: (token: string) => Promise<AuthResponse>
   ): Promise<AuthResponse> => {
     const refreshToken = await getRefreshToken();
-    
+
     if (!refreshToken) {
       clearTokens();
       throw new Error('No refresh token available');
     }
-    
+
     try {
       setRefreshInProgress(true);
-      
+
       const response = await refreshTokenApi(refreshToken);
-      
+
       if (response.status === 'success' && response.data) {
         const { accessToken, refreshToken: newRefreshToken } = response.data;
-        
+
         await saveTokens({
           token: accessToken as string,
-          refreshToken: newRefreshToken
+          refreshToken: newRefreshToken,
+          enable: true
         });
-        
+
         if (accessToken) {
           onTokenRefreshed(accessToken);
         } else {
@@ -67,7 +68,7 @@ const createTokenRefreshService = () => {
       setRefreshInProgress(false);
     }
   };
-  
+
   return {
     subscribeToTokenRefresh,
     onTokenRefreshed,

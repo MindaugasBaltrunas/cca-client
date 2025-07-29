@@ -24,7 +24,6 @@ const initialValues: LoginState = {
 
 export const LoginForm: React.FC = () => {
   const { signIn, isLoading } = useAuth();
-
   const handleSubmit = async (
     values: LoginState,
     { setSubmitting, resetForm }: FormikHelpers<LoginState>
