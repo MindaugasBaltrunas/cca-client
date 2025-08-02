@@ -2,8 +2,8 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../../../infrastructure/services';
 import { logger } from '../../../shared/utils/logger';
 import { saveTokens } from '../../../infrastructure/services/tokenStorage';
-import { IVerify2FAResponse } from '../../../shared/types/api.types';
 import { AuthUser } from './index';
+import { TwoFactorSetupResponse } from '../../../shared/types/api.types';
 
 export const useAuthMutations = ({
   handleAuthSuccess,
@@ -128,9 +128,9 @@ export const useAuthMutations = ({
   const verify2FAMutation = useMutation({
     mutationFn: ({ userId, token }: { userId: string; token: string }) =>
       authApi.verify2FA(userId, token),
-    onSuccess: async (response: IVerify2FAResponse) => {
+    onSuccess: async (response: TwoFactorSetupResponse) => {
       await saveTokens({
-        token: response.token,
+        token: response.data.,
         id: response.userId ?? '',
         refreshToken: response.refreshToken,
         enable: true, // ✅ verified means enabled
@@ -157,17 +157,17 @@ export const useAuthMutations = ({
 
   const setup2FAMutation = useMutation({
     mutationFn: authApi.setup2FA,
-    onSuccess: (response) => logger.debug('2FA setup successful:', response),
+    onSuccess: (response:TwoFactorSetupResponse) => logger.debug('2FA setup successful:', response),
     onError: (error) => logger.error('2FA setup failed:', error),
   });
 
   const enable2FAMutation = useMutation({
     mutationFn: authApi.enable2FA,
-    onSuccess: async () => {
-      logger.info('2FA enabled successfully');
+    onSuccess: async (response:TwoFactorSetupResponse) => {
+      logger.info('2FA enabled successfully', response);
 
       updateAuthCache({ enable: true });
-      // await saveTokens({ token: '', id: '', enable: true });
+      await saveTokens({ token: '', id: '', enable: true });
       setNeedsSetup(false);
     },
     onError: (error) => logger.error('2FA enable failed:', error),

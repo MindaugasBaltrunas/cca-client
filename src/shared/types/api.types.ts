@@ -16,7 +16,7 @@ export interface BaseCredentials {
   password: string;
 }
 
-export interface LoginState extends BaseCredentials {}
+export interface LoginState extends BaseCredentials { }
 
 export interface SignUpData extends BaseCredentials {
   confirmPassword?: string;
@@ -31,22 +31,32 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
-  adminPassword?: string; 
 }
 
-export interface IVerify2FAResponse {
-  userId?: string | undefined;
-  token: string;
-  refreshToken: string;
-  status: string;
-  data?: User; 
-  enabled?: boolean;
-}
+
 
 export interface TwoFactorSetupResponse {
-  data: any;
-  qrCode: string;
-  qrCodeUrl: string;
+  success: boolean;
+  message: string;
+  data: {
+    disabledAt?:string,
+    token?: string,
+    refreshToken?: string,
+    qrcode?: string;
+    enable: boolean;
+    user?: User;
+    auth: {
+      hasAccessToken: boolean;
+      enable: boolean;
+      verified?: boolean;
+      status: string;
+    }
+  };
+  meta: {
+    timestamp: string;
+    nextStep: string;
+    redirectTo: string;
+  }
 }
 
 export interface ApiError {

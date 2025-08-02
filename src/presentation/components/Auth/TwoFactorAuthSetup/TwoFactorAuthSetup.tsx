@@ -36,11 +36,11 @@ const TwoFactorAuthSetup: React.FC = () => {
 
   const handleSetupQrCode = async (): Promise<void> => {
     try {      
-      const qr = await setupQrCode();
+      const qrUrl = await setupQrCode();
       
-      const qrUrl = qr?.qrCodeUrl;
+   
       if (qrUrl) {
-        setSearchParams({ qr: qrUrl });
+        setSearchParams({ qr: String(qrUrl) });
       }
       
     } catch (err) {

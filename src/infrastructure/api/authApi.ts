@@ -1,5 +1,5 @@
 import http, { API_CONFIG } from '../../shared/http';
-import { AuthResponse, IVerify2FAResponse, LoginState, SignUpData, TwoFactorSetupResponse } from '../../shared/types/api.types';
+import { AuthResponse, LoginState, SignUpData, TwoFactorSetupResponse } from '../../shared/types/api.types';
 import { EventBus } from '../../shared/utils/eventBus';
 import { logger } from '../../shared/utils/logger';
 import { sanitizeString } from '../services';
@@ -106,9 +106,9 @@ export const logout = async (userId: string): Promise<AuthResponse> => {
 
 export const setup2FA = async (): Promise<TwoFactorSetupResponse> => {
   try {
-    logger.debug('Setting up 2FA');
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.SETUP, {});
     return response.data;
+  
   } catch (error) {
     logger.error('2FA setup error:', error);
     throw error;
@@ -121,7 +121,7 @@ export const enable2FA = (token: string): Promise<AuthResponse> =>
 export const disable2FA = (token: string): Promise<AuthResponse> =>
   process2FAOperation(token, API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.DISABLE, 'auth:2faDisabled', '2FA disable error');
 
-export const verify2FA = async (userId: string, token: string): Promise<IVerify2FAResponse> => {
+export const verify2FA = async (userId: string, token: string): Promise<TwoFactorSetupResponse> => {
   try {
     logger.debug('Verifying 2FA token');
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.VERIFY, {

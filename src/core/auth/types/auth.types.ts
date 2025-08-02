@@ -5,7 +5,10 @@ export interface TokenData {
   hasAccessToken: boolean;
   hasUserId: boolean;
   enable: boolean;
+  verified?: boolean;
+  status?: "basic_auth" | "needs_setup" | "pending_verification" | "full_auth";
 }
+
 
 export interface AuthStatus {
   isReady: boolean;
@@ -52,7 +55,7 @@ export interface AuthenticationActions {
   clearAuthState: () => void;
 }
 
-export interface AuthContextType extends  AuthenticationActions {
+export interface AuthContextType extends AuthenticationActions {
   loginError: any;
   registerError: any;
   verify2FAError: any;

@@ -1,8 +1,7 @@
 import React from "react";
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 import Preloader from "../components/Preloader/preloader";
-import { useTokenData } from "../../core/auth/hooks";
-import { logger } from "../../shared/utils/logger";
+import { useAuthState } from "../../core/auth/hooks/useAuthState";
 
 export interface AuthRouteProps {
   fallbackPath?: string;
@@ -20,99 +19,67 @@ export const AuthRoute: React.FC<AuthRouteProps> = ({
   redirectIfAuthenticated,
 }) => {
   const location = useLocation();
-  const { isLoading, data: tokenData } = useTokenData();
+  const { isAuthenticated, tokenLoading, authState } = useAuthState();
 
-  logger.debug("Token data:", tokenData);
-
-  const hasToken = !!tokenData?.hasAccessToken;
-  const has2FAEnabled = tokenData?.enable === true;
-  const needsSetup = hasToken && tokenData?.enable === false;
-  const authState = getAuthState(hasToken, has2FAEnabled, needsSetup);
-
-  if (isLoading) return <Preloader isLoading />;
-
-  if (allowPublic) {
-    if (authState === "NEEDS_SETUP")
-      return <Navigate to="/2fa-setup" replace />;
-    if (authState === "PENDING_VERIFICATION")
-      return (
-        <Navigate
-          to={determineTargetPath(authState, tokenData?.enable)}
-          replace
-        />
-      );
-    if (authState === "FULL_AUTH" && redirectIfAuthenticated)
-      return <Navigate to={redirectIfAuthenticated} replace />;
-    return <Outlet />;
+  if (tokenLoading) {
+    return <Preloader isLoading />;
   }
 
-  if (authState === "NO_AUTH")
-    return <Navigate to={fallbackPath} state={{ from: location }} replace />;
-
-  if (require2FA) {
-    if (authState === "FULL_AUTH") return <Navigate to="/dashboard" replace />;
-    if (authState === "NEEDS_SETUP" || authState === "PENDING_VERIFICATION") {
-      const targetPath = determineTargetPath(authState, tokenData?.enable);
-      if (location.pathname !== targetPath)
-        return <Navigate to={targetPath} replace />;
+  // 🔓 Public Routes: Allows access without authentication or redirects if authenticated
+  if (allowPublic) {
+    if (isAuthenticated && redirectIfAuthenticated) {
+      return <Navigate to={redirectIfAuthenticated} replace />;
     }
     return <Outlet />;
   }
 
-  if (requireFullAuth) {
-    if (authState === "NEEDS_SETUP")
-      return <Navigate to="/2fa-setup" replace />;
-    if (authState === "PENDING_VERIFICATION")
-      return (
-        <Navigate
-          to={determineTargetPath(authState, tokenData?.enable)}
-          replace
-        />
-      );
-    if (authState !== "FULL_AUTH")
-      return <Navigate to={fallbackPath} state={{ from: location }} replace />;
-    return <Outlet />;
+  // 🚫 No Authentication: Redirects to fallbackPath if not authenticated and not a public route
+  if (!isAuthenticated) {
+    return <Navigate to={fallbackPath} state={{ from: location }} replace />;
   }
 
+  // 🔐 Routes requiring 2FA setup/verification
+  if (require2FA) {
+    if (authState === "FULL_AUTH") {
+      // If 2FA is required and user has full auth, but tries to access 2FA setup/verify page, redirect to dashboard.
+      // This prevents authenticated users from re-accessing setup/verification pages unnecessarily.
+      if (
+        location.pathname === "/2fa-setup" ||
+        location.pathname === "/verify-2fa"
+      ) {
+        return <Navigate to="/" replace />;
+      }
+      return <Outlet />;
+    }
+    // Redirect to 2FA setup or verification if required and not in FULL_AUTH state
+    return enforce2FARedirect(authState, location);
+  }
+
+  // ✅ Routes requiring FULL authentication (2FA verified)
+  if (requireFullAuth) {
+    if (authState !== "FULL_AUTH") {
+      return enforce2FARedirect(authState, location);
+    }
+  }
+
+  // 🟢 Default: Authenticated but non-critical routes (basic or full auth)
   return <Outlet />;
 };
 
-type AuthState =
-  | "NO_AUTH"
-  | "NEEDS_SETUP"
-  | "PENDING_VERIFICATION"
-  | "FULL_AUTH";
-
-function getAuthState(
-  hasToken: boolean,
-  has2FAEnabled: boolean,
-  needsSetup: boolean
-): AuthState {
-  if (!hasToken) return "NO_AUTH";
-  if (has2FAEnabled) return "PENDING_VERIFICATION";
-  if (hasToken && needsSetup) return "NEEDS_SETUP";
-  if (hasToken && has2FAEnabled) return "FULL_AUTH";
-  return "NO_AUTH";
-}
-
-function determineTargetPath(authState: AuthState, enabled?: boolean): string {
-  switch (authState) {
-    case "NEEDS_SETUP":
-      return "/2fa-setup";
-    case "PENDING_VERIFICATION":
-      return enabled === true ? "/verify-2fa" : "/2fa-setup";
-    default:
-      return "/2fa-setup";
+// 🔧 Helper: Handle redirects for setup/verification
+function enforce2FARedirect(authState: string, location: any) {
+  if (authState === "NEEDS_SETUP" && location.pathname !== "/2fa-setup") {
+    return <Navigate to="/2fa-setup" state={{ from: location }} replace />;
   }
-}
 
-export function validateAuthRouteProps(props: AuthRouteProps): string[] {
-  const errors: string[] = [];
-  if (props.allowPublic && (props.requireFullAuth || props.require2FA)) {
-    errors.push("Route cannot be both public and require authentication");
+  if (
+    authState === "PENDING_VERIFICATION" &&
+    location.pathname !== "/verify-2fa"
+  ) {
+    return <Navigate to="/verify-2fa" state={{ from: location }} replace />;
   }
-  if (props.requireFullAuth && props.require2FA) {
-    errors.push("Route cannot require both full auth and specific 2FA access");
-  }
-  return errors;
+
+  // If already on the correct 2FA page or no specific 2FA action needed for the current state, allow Outlet.
+  // This handles cases like BASIC_AUTH where full auth might be required, but not necessarily 2FA setup/verification itself.
+  return <Outlet />;
 }
