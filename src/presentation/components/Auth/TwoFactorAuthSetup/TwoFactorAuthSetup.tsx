@@ -6,6 +6,7 @@ import SetupInstructions from "./components/SetupInstructions";
 import QrCodeDisplay from "./components/QrCodeDisplay";
 import VerificationForm from "./components/VerificationForm";
 import styles from "./TwoFactorAuthSetup.module.scss";
+import { safeDisplay } from "../../../../infrastructure/services";
 
 const TwoFactorAuthSetup: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -20,7 +21,7 @@ const TwoFactorAuthSetup: React.FC = () => {
     clearError 
   } = useTwoFactorSetup();
 
-  const qrCodeUrl = searchParams.get('qr');
+  const qrCodeUrl = searchParams.get('qr') ?? '';
 
   const handleVerifyCode = async (code: string): Promise<void> => {
     try {
@@ -30,46 +31,39 @@ const TwoFactorAuthSetup: React.FC = () => {
         navigate("/verify-2fa");
       }
     } catch (err) {
-      console.error("Verification error (already handled):", err);
+      console.error("Verification error:", err);
     }
   };
 
   const handleSetupQrCode = async (): Promise<void> => {
     try {      
       const qrUrl = await setupQrCode();
-      
-   
       if (qrUrl) {
         setSearchParams({ qr: String(qrUrl) });
       }
-      
     } catch (err) {
-      console.error("❌ QR setup error:", err);
+      console.error("QR setup error:", err);
       setSearchParams({}); 
     }
   };
+
+  const showQrSection = !error && !isLoading && !!qrCodeUrl;
 
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Set Up Two-Factor Authentication</h2>
 
       <div className={styles.content}>
-        {error && <ErrorMessage message={error} onClose={clearError} />}
+        {error && <ErrorMessage message={safeDisplay.text(error)} onClose={clearError} />}
 
         <Preloader isLoading={isLoading} />
 
-        <div style={{ 
-          background: '#f0f0f0', 
-          padding: '10px', 
-          margin: '10px 0', 
-          fontSize: '12px',
-          fontFamily: 'monospace'
-        }}>
+        <div className={styles.debug}>
           <strong>Debug Info:</strong><br />
-          Error: {error || 'none'}<br />
+          Error: {safeDisplay.text(error || 'none')}<br />
           Loading: {isLoading.toString()}<br />
-          QR URL (from params): {qrCodeUrl ? 'present' : 'null'}<br />
-          Should show QR: {(!error && !isLoading && !!qrCodeUrl).toString()}
+          QR URL: {qrCodeUrl ? 'present' : 'null'}<br />
+          Show QR Section: {showQrSection.toString()}
         </div>
 
         {!isLoading && !qrCodeUrl && !error && (
@@ -78,7 +72,7 @@ const TwoFactorAuthSetup: React.FC = () => {
           </button>
         )}
 
-        {!error && !isLoading && qrCodeUrl && (
+        {showQrSection && (
           <>
             <SetupInstructions />
             <QrCodeDisplay qrCodeUrl={qrCodeUrl} />

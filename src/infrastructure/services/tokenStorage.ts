@@ -5,7 +5,7 @@ const ACCESS_TOKEN_KEY = 'auth_access_token';
 const REFRESH_TOKEN_KEY = 'auth_refresh_token';
 const TOKEN_EXPIRY_KEY = 'auth_token_expiry';
 const ID_KEY = 'auth_user_id';
-const TWO_FACTOR_KEY = 'auth_two_factor'; // ✅ Naujas key
+const TWO_FACTOR_KEY = 'auth_two_factor';
 
 const IV_LENGTH = 12;
 const EXPIRY_BUFFER_MS = 10000;

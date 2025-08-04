@@ -1,6 +1,5 @@
 import { useCallback } from 'react';
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
-import { useAuthState } from './useAuthState';
 import { useTwoFactorFlow } from './useTwoFactorFlow';
 import { useAuthMutations } from './useAuthMutations';
 import { AuthUser, AuthContextType } from './index';
@@ -33,11 +32,7 @@ export const useAuthentication = (): AuthContextType => {
   const queryClient = useQueryClient();
 
   const {
-    is2FAFlow,
-    tempUserId,
-    needsSetup,
     setNeedsSetup,
-    isInTwoFactorFlow,
     startTwoFactorFlow,
     resetTwoFactorFlow,
   } = useTwoFactorFlow();
@@ -50,35 +45,30 @@ export const useAuthentication = (): AuthContextType => {
     twoFactorEnabled: boolean;
   }) => {
     logger.debug('Login successful:', { enabled: response.twoFactorEnabled });
-    
+
     if (response.token) {
-      // ✅ Aiškiai perduodame visus parametrus
-      await saveTokens({ 
-        token: response.token, 
-        id: response.userId, 
+      await saveTokens({
+        token: response.token,
+        id: response.userId,
         enable: response.twoFactorEnabled,
-        refreshToken: response.refreshToken 
+        refreshToken: response.refreshToken
       });
-      
+
       updateTokenQueryCache(queryClient, response.token, response.userId, response.twoFactorEnabled);
     }
 
     resetTwoFactorFlow();
   }, [queryClient, resetTwoFactorFlow]);
 
-  // ✅ Pataisyta logout logika
   const resetAuthState = useCallback(async () => {
     logger.debug('Resetting auth state');
-    
-    // Išvalome localStorage
+
     clearTokens();
-    
-    // Išvalome React Query cache
+
     clearTokenQueryCache(queryClient);
-    
-    // Reset 2FA flow
+
     resetTwoFactorFlow();
-    
+
     logger.debug('Auth state reset completed');
   }, [queryClient, resetTwoFactorFlow]);
 

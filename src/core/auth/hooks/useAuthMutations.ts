@@ -2,98 +2,153 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../../../infrastructure/services';
 import { logger } from '../../../shared/utils/logger';
 import { saveTokens } from '../../../infrastructure/services/tokenStorage';
-import { AuthUser } from './index';
-import { TwoFactorSetupResponse } from '../../../shared/types/api.types';
+import { AuthCacheData, AuthMutationHandlers, AuthResponse, AuthTokens, AuthUser, TwoFactorSetupResponse, VerifyTwoFactorParams } from '../../../shared/types/api.types';
 
 export const useAuthMutations = ({
   handleAuthSuccess,
   startTwoFactorFlow,
   setNeedsSetup,
   resetAuthState,
-}: {
-  handleAuthSuccess: (response: any) => void;
-  startTwoFactorFlow: (userId: string) => void;
-  setNeedsSetup: (needsSetup: boolean) => void;
-  resetAuthState: () => void;
-}) => {
+}: AuthMutationHandlers) => {
   const queryClient = useQueryClient();
-  const updateAuthCache = (data: Partial<{
-    accessToken: string | null;
-    userId: string | null;
-    refreshToken?: string;
-    enable: boolean;
-  }>) => {
+
+  const updateAuthCache = (data: Partial<AuthTokens>): void => {
     logger.debug('Updating auth cache with data:', data);
-    queryClient.setQueryData(['auth-tokens'], (prev: any) => ({
-      ...prev,
-      ...data,
-      enable: !!data.enable,
-      hasAccessToken: !!data.accessToken,
-      hasUserId: !!data.userId,
-      hasValidToken: !!data.accessToken && !!data.userId,
-    }));
+
+    queryClient.setQueryData<AuthCacheData>(['auth-tokens'], (prev) => {
+      const accessToken: string | null = data.accessToken ?? prev?.accessToken ?? null;
+      const refreshToken: string | undefined = data.refreshToken ?? prev?.refreshToken;
+      const userId: string | null = data.userId ?? prev?.userId ?? null;
+      const enable: boolean = data.enable ?? prev?.enable ?? false;
+
+      return {
+        accessToken,
+        refreshToken,
+        userId,
+        enable,
+        hasAccessToken: !!accessToken,
+        hasUserId: !!userId,
+        hasValidToken: !!accessToken && !!userId,
+      };
+    });
+  };
+  ;
+
+  const processAuthResponse = async (
+    authResponse: AuthResponse,
+    isRegistration = false
+  ): Promise<void> => {
+    const { token, userId, refreshToken, enabled, expiresAt } = extractAuthData(authResponse);
+
+    if (!isValidAuthData(token, userId)) {
+      logger.error('Missing token or userId in auth response');
+      resetAuthState();
+      return;
+    }
+
+    await updateAuthStateAndStorage({
+      token: token!,
+      userId: userId!,
+      refreshToken,
+      enabled: enabled ?? false,
+      expiresAt: expiresAt !== undefined ? Number(expiresAt) : undefined,
+    });
+
+    const authStatus = determineAuthStatus(authResponse.status, enabled);
+    await handleAuthStatus(authStatus, {
+      token: token!,
+      userId: userId!,
+      refreshToken,
+      enabled: enabled ?? false,
+      userData: undefined, // AuthResponse.data doesn't extend AuthUser in your interface
+    });
+  };
+
+  const extractAuthData = (authResponse: AuthResponse) => ({
+    token: authResponse.data?.accessToken,
+    userId: authResponse.data?.userId,
+    refreshToken: authResponse.data?.refreshToken,
+    enabled: authResponse.data?.enabled,
+    expiresAt: authResponse.data?.expiresAt,
+  });
+
+  const isValidAuthData = (token?: string, userId?: string): boolean => {
+    return Boolean(token && userId);
+  };
+
+  const updateAuthStateAndStorage = async (params: {
+    token: string;
+    userId: string;
+    refreshToken?: string;
+    enabled: boolean;
+    expiresAt?: number;
+  }): Promise<void> => {
+    const { token, userId, refreshToken, enabled, expiresAt } = params;
+
+    // Update cache
+    updateAuthCache({
+      accessToken: token,
+      userId,
+      refreshToken,
+      enable: enabled,
+    });
+
+    // Persist to storage
+    await saveTokens({
+      token,
+      id: userId,
+      refreshToken,
+      enable: enabled,
+    });
+
+    logger.debug('Auth state updated:', { enabled, expiresAt });
+  };
+
+  const determineAuthStatus = (status: 'success' | 'error' | 'pending', enabled?: boolean) => ({
+    isSuccess: status === 'success',
+    needsTwoFactorSetup: status === 'success' && !enabled,
+    canCompleteLogin: status === 'success' && enabled,
+  });
+
+  const handleAuthStatus = async (
+    authStatus: ReturnType<typeof determineAuthStatus>,
+    authData: {
+      token: string;
+      userId: string;
+      refreshToken?: string;
+      enabled: boolean;
+      userData?: AuthUser;
+    }
+  ): Promise<void> => {
+    const { isSuccess, needsTwoFactorSetup, canCompleteLogin } = authStatus;
+
+    if (!isSuccess) {
+      logger.warn('Auth status not success:', authStatus);
+      resetAuthState();
+      return;
+    }
+
+    if (needsTwoFactorSetup) {
+      startTwoFactorFlow(authData.userId);
+      return;
+    }
+
+    if (canCompleteLogin) {
+      setNeedsSetup(!authData.enabled);
+      handleAuthSuccess({
+        token: authData.token,
+        userId: authData.userId,
+        refreshToken: authData.refreshToken,
+        twoFactorEnabled: authData.enabled,
+        userData: authData.userData,
+      });
+    }
   };
 
   const loginMutation = useMutation({
     mutationFn: authApi.login,
-    onSuccess: async (authResponse) => {
-      const token = authResponse.data?.accessToken;
-      const userId = authResponse.data?.userId;
-      const refreshToken = authResponse.data?.refreshToken;
-      const status = authResponse.status;
-      const enabled = authResponse.data?.enabled ?? false;
-
-      if (!userId || !token) {
-        logger.error('Missing token or userId in login response');
-        return;
-      }
-
-      // ✅ Update cache-driven auth state
-      updateAuthCache({
-        accessToken: token,
-        userId,
-        refreshToken,
-        enable: enabled,
-      });
-
-      logger.debug('Login successful:', { enabled });
-
-      // ✅ Persist to storage
-      await saveTokens({
-        token,
-        id: userId,
-        refreshToken,
-        enable: enabled,
-      });
-
-      const isSuccess = status === 'success';
-      const needsTwoFactorSetup = isSuccess && !enabled;
-      const canCompleteLogin = isSuccess && enabled;
-
-      if (!isSuccess) {
-        logger.warn('Login status not success:', status);
-        resetAuthState();
-        return;
-      }
-
-      if (needsTwoFactorSetup) {
-        startTwoFactorFlow(userId);
-        return;
-      }
-
-      if (canCompleteLogin) {
-        setNeedsSetup(!enabled);
-        // ✅ KRITINĖ PATAISYMA: Perduodame teisingus parametrus
-        handleAuthSuccess({
-          token,
-          userId,
-          refreshToken,
-          twoFactorEnabled: enabled, // ✅ Pridėtas trūkstamas parametras!
-          userData: undefined // ✅ Explicit undefined
-        });
-      }
-    },
-    onError: (error) => {
+    onSuccess: (authResponse: AuthResponse) => processAuthResponse(authResponse),
+    onError: (error: Error) => {
       logger.error('Login failed:', error);
       resetAuthState();
     },
@@ -101,77 +156,80 @@ export const useAuthMutations = ({
 
   const registerMutation = useMutation({
     mutationFn: authApi.register,
-    onSuccess: (authResponse) => {
-      // ✅ Registration paprastai nereikalauja handleAuthSuccess
-      // Arba jei reikia, perduokite teisingus parametrus:
-
-      const token = authResponse.data?.accessToken;
-      const userId = authResponse.data?.userId;
-      const enabled = authResponse.data?.enabled ?? false;
-
-      if (token && userId) {
-        handleAuthSuccess({
-          token,
-          userId,
-          refreshToken: authResponse.data?.refreshToken,
-          twoFactorEnabled: enabled, // ✅ Pridėtas trūkstamas parametras!
-          userData: authResponse.data as unknown as AuthUser
-        });
-      } else {
-        // Jei registracija negrąžina token'ų, tiesiog log'iname
-        logger.debug('Registration successful, no tokens provided');
-      }
+    onSuccess: (authResponse: AuthResponse) => processAuthResponse(authResponse, true),
+    onError: (error: Error) => {
+      logger.error('Registration failed:', error);
+      resetAuthState();
     },
-    onError: (error) => logger.error('Registration failed:', error),
   });
 
   const verify2FAMutation = useMutation({
-    mutationFn: ({ userId, token }: { userId: string; token: string }) =>
+    mutationFn: ({ userId, token }: VerifyTwoFactorParams) =>
       authApi.verify2FA(userId, token),
     onSuccess: async (response: TwoFactorSetupResponse) => {
-      await saveTokens({
-        token: response.data.,
-        id: response.userId ?? '',
-        refreshToken: response.refreshToken,
-        enable: true, // ✅ verified means enabled
+      const { token, userId, refreshToken } = extractTwoFactorTokens(response);
+
+      if (!isValidAuthData(token, userId)) {
+        logger.error('Invalid 2FA verification response');
+        return;
+      }
+
+      await updateAuthStateAndStorage({
+        token: token!,
+        userId: userId!,
+        refreshToken,
+        enabled: true,
       });
 
-      updateAuthCache({
-        accessToken: response.token,
-        userId: response.userId ?? '',
-        refreshToken: response.refreshToken,
-        enable: true,
-      });
-
-      // ✅ KRITINĖ PATAISYMA: Perduodame teisingus parametrus
       handleAuthSuccess({
-        token: response.token,
-        userId: response.userId ?? '',
-        refreshToken: response.refreshToken,
-        twoFactorEnabled: true, // ✅ Pridėtas trūkstamas parametras!
-        userData: response.data as AuthUser,
+        token: token!,
+        userId: userId!,
+        refreshToken,
+        twoFactorEnabled: true,
+        userData: response.data.user as AuthUser,
       });
     },
-    onError: (error) => logger.error('2FA verification failed:', error),
+    onError: (error: Error) => {
+      logger.error('2FA verification failed:', error);
+    },
+  });
+
+  const extractTwoFactorTokens = (response: TwoFactorSetupResponse) => ({
+    token: response.data.token,
+    userId: response.data.user?.id,
+    refreshToken: response.data.refreshToken,
   });
 
   const setup2FAMutation = useMutation({
     mutationFn: authApi.setup2FA,
-    onSuccess: (response:TwoFactorSetupResponse) => logger.debug('2FA setup successful:', response),
-    onError: (error) => logger.error('2FA setup failed:', error),
+    onSuccess: (response: TwoFactorSetupResponse) => {
+      logger.debug('2FA setup successful:', response);
+    },
+    onError: (error: Error) => {
+      logger.error('2FA setup failed:', error);
+    },
   });
 
-  const enable2FAMutation = useMutation({
+  const enable2FAMutation = useMutation<AuthResponse, Error, string>({
     mutationFn: authApi.enable2FA,
-    onSuccess: async (response:TwoFactorSetupResponse) => {
+    onSuccess: async (response) => {
       logger.info('2FA enabled successfully', response);
 
       updateAuthCache({ enable: true });
-      await saveTokens({ token: '', id: '', enable: true });
+
+      await saveTokens({
+        token: response.data?.accessToken || '',
+        id: response.data?.userId || '',
+        enable: response.data?.enabled ? true : false
+      });
+
       setNeedsSetup(false);
     },
-    onError: (error) => logger.error('2FA enable failed:', error),
+    onError: (error: Error) => {
+      logger.error('2FA enable failed:', error);
+    },
   });
+
 
   return {
     loginMutation,
@@ -179,5 +237,5 @@ export const useAuthMutations = ({
     verify2FAMutation,
     setup2FAMutation,
     enable2FAMutation,
-  };
+  } as const;
 };

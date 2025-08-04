@@ -1,5 +1,6 @@
 import React from 'react';
 import { useFormikContext } from 'formik';
+import { safeDisplay } from '../../../infrastructure/services';
 
 interface FormInputProps {
   name: string;
@@ -10,35 +11,34 @@ interface FormInputProps {
   autoComplete?: string;
 }
 
-const FormInput: React.FC<FormInputProps> = ({ 
-  name, 
-  label, 
-  type, 
-  required, 
+const FormInput: React.FC<FormInputProps> = ({
+  name,
+  label,
+  type,
+  required,
   placeholder,
-  autoComplete
+  autoComplete,
 }) => {
   const formik = useFormikContext<any>();
-  const fieldProps = formik.getFieldProps(name);
-  
-  const getErrorMessage = (): string => {
-    const error = formik.errors[name];
-    return typeof error === 'string' ? error : '';
-  };
-  
+  const { touched, errors, getFieldProps } = formik;
+  const fieldProps = getFieldProps(name);
+
+  const errorMessage = touched[name] && typeof errors[name] === 'string' ? errors[name] : '';
+
   return (
     <div>
-      <label htmlFor={name}>{label}{required && ' *'}</label>
+      <label
+        htmlFor={name}
+        dangerouslySetInnerHTML={safeDisplay.html(`${label}${required ? ' *' : ''}`)}
+      />
       <input
         id={name}
         type={type}
-        placeholder={placeholder}
+        placeholder={safeDisplay.text(placeholder || '')}
         autoComplete={autoComplete}
         {...fieldProps}
       />
-      {formik.touched[name] && formik.errors[name] ? (
-        <div className="danger">{getErrorMessage()}</div>
-      ) : null}
+      {errorMessage && <div className="danger">{safeDisplay.text(errorMessage)}</div>}
     </div>
   );
 };
