@@ -19,7 +19,6 @@ const debugClientConfig = () => {
     }
   };
   
-  logger.info('HTTP Client Configuration:', config);
   return config;
 };
 
@@ -27,9 +26,7 @@ export const createHttpClient = (): AxiosInstance => {
   debugClientConfig();
   
   const baseURL = API_CONFIG.BASE_URL || '/';
-  
-  logger.info(`Creating HTTP client with baseURL: ${baseURL}`);
-  
+    
   const instance = axios.create({
     baseURL,
     timeout: API_CONFIG.REQUEST_TIMEOUT,
@@ -87,10 +84,8 @@ export const createHttpClient = (): AxiosInstance => {
   return instance;
 };
 
-// Create a single instance
 const axiosInstance = createHttpClient();
 
-// Enhanced helper functions that don't require passing instance
 export const get = <T = any>(
   url: string, 
   params?: any, 

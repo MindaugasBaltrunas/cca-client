@@ -1,21 +1,24 @@
 import { useQuery } from "@tanstack/react-query";
-import { getAccessToken, getId, getTwoFactorEnabled } from "../../../infrastructure/services/tokenStorage";
+import { useQueryClient } from '@tanstack/react-query';
+import { getAccessToken, getId } from "../../../infrastructure/services/tokenStorage";
 import type { TokenData } from "../types/auth.types";
 
 export const useTokenData = () => {
+  const queryClient = useQueryClient();
+  
   const fetchTokenData = async (): Promise<TokenData> => {
     try {
-      const [accessToken, userId, twoFactorEnabled] = await Promise.all([
+      const [accessToken, userId] = await Promise.all([
         getAccessToken(),
-        getId(),
-        getTwoFactorEnabled(),
+        getId()
       ]);
-
+      
+      const currentData = queryClient.getQueryData<TokenData>(['auth-tokens']);
       const hasAccessToken = Boolean(accessToken);
       const hasUserId = Boolean(userId);
-      const enable = Boolean(twoFactorEnabled);
+      const enable = currentData?.enable ?? true;
       const hasValidToken = hasAccessToken && hasUserId;
-
+      
       return {
         accessToken,
         userId,
@@ -35,6 +38,7 @@ export const useTokenData = () => {
       };
     }
   };
+
   return useQuery({
     queryKey: ['auth-tokens'],
     queryFn: fetchTokenData,
@@ -44,5 +48,4 @@ export const useTokenData = () => {
     refetchOnWindowFocus: false,
     refetchOnMount: true,
   });
-
 };

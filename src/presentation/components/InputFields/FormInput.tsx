@@ -1,6 +1,6 @@
-import React from 'react';
-import { useFormikContext } from 'formik';
-import { safeDisplay } from '../../../infrastructure/services';
+import React from "react";
+import { useFormikContext } from "formik";
+import { safeDisplay } from "../../../infrastructure/services";
 
 interface FormInputProps {
   name: string;
@@ -23,18 +23,23 @@ const FormInput: React.FC<FormInputProps> = ({
   const { touched, errors, getFieldProps } = formik;
   const fieldProps = getFieldProps(name);
 
-  const errorMessage = touched[name] && typeof errors[name] === 'string' ? errors[name] : '';
+  const errorMessage =
+    touched[name] && typeof errors[name] === "string"
+      ? (errors[name] as string)
+      : "";
 
   return (
     <div>
       <label
         htmlFor={name}
-        dangerouslySetInnerHTML={safeDisplay.html(`${label}${required ? ' *' : ''}`)}
+        dangerouslySetInnerHTML={safeDisplay.html(
+          `${label}${required ? " *" : ""}`
+        )}
       />
       <input
         id={name}
         type={type}
-        placeholder={safeDisplay.text(placeholder || '')}
+        placeholder={safeDisplay.text(placeholder || "")}
         autoComplete={autoComplete}
         {...fieldProps}
       />

@@ -44,8 +44,6 @@ export const useAuthentication = (): AuthContextType => {
     userData?: AuthUser;
     twoFactorEnabled: boolean;
   }) => {
-    logger.debug('Login successful:', { enabled: response.twoFactorEnabled });
-
     if (response.token) {
       await saveTokens({
         token: response.token,
@@ -61,7 +59,6 @@ export const useAuthentication = (): AuthContextType => {
   }, [queryClient, resetTwoFactorFlow]);
 
   const resetAuthState = useCallback(async () => {
-    logger.debug('Resetting auth state');
 
     clearTokens();
 
@@ -69,7 +66,6 @@ export const useAuthentication = (): AuthContextType => {
 
     resetTwoFactorFlow();
 
-    logger.debug('Auth state reset completed');
   }, [queryClient, resetTwoFactorFlow]);
 
   const {

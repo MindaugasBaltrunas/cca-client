@@ -13,9 +13,7 @@ const LoginPage = React.lazy(() => import("../pages/loginPage/LoginPage"));
 const TwoFactorSetupPage = React.lazy(
   () => import("../components/Auth/TwoFactorAuthSetup/TwoFactorAuthSetup")
 );
-const TwoFactorEnableForm = React.lazy(
-  () => import("../components/Auth/TwoFactoEnableForm/TwoFactorEnableForm")
-);
+
 const TwoFactorVerifyPage = React.lazy(
   () => import("../components/Auth/TwoFactorVerifyForm/TwoFactorVerifyForm")
 );
@@ -42,9 +40,7 @@ export const Routing: React.FC = () => {
         {/* 🔐 2FA routes */}
         <Route element={<TwoFactorRoute />}>
           <Route path="/2fa-setup" element={<TwoFactorSetupPage />} />
-          {/* <Route path="/2fa-enable" element={<} */}
           <Route path="/verify-2fa" element={<TwoFactorVerifyPage />} />
-          <Route path="/2fa-enable" element={<TwoFactorEnableForm />} />
         </Route>
 
         {/* 🛡️ Protected routes */}

@@ -5,7 +5,6 @@ const ACCESS_TOKEN_KEY = 'auth_access_token';
 const REFRESH_TOKEN_KEY = 'auth_refresh_token';
 const TOKEN_EXPIRY_KEY = 'auth_token_expiry';
 const ID_KEY = 'auth_user_id';
-const TWO_FACTOR_KEY = 'auth_two_factor';
 
 const IV_LENGTH = 12;
 const EXPIRY_BUFFER_MS = 10000;
@@ -17,7 +16,7 @@ export interface TokenInfo {
   token: string;
   refreshToken?: string | null | undefined;
   expiresIn?: number | undefined;
-  enable: boolean; 
+  enable: boolean;
 }
 
 interface EncryptedData { iv: number[]; data: number[]; }
@@ -80,7 +79,6 @@ function secureRemove(key: string): void {
   ls?.removeItem(key);
 }
 
-// Token helpers
 export const setId = (id: string) => secureSet(ID_KEY, id);
 export const getId = () => secureGet(ID_KEY);
 
@@ -97,9 +95,6 @@ export const getTokenExpiry = async () => {
   return Number.isFinite(n) ? n : null;
 };
 
-export const setTwoFactorEnabled = (enabled: boolean) => secureSet(TWO_FACTOR_KEY, enabled ? '1' : '0');
-export const getTwoFactorEnabled = async () => (await secureGet(TWO_FACTOR_KEY)) === '1';
-
 export async function isTokenExpired(): Promise<boolean> {
   const e = await getTokenExpiry();
   return !e || Date.now() > e - EXPIRY_BUFFER_MS;
@@ -114,9 +109,7 @@ export function getExpiryDateFromToken(token: string): Date | null {
   }
 }
 
-// ✅ Pagrindinė saveTokens logika su 2FA
-export async function saveTokens({ token, refreshToken, expiresIn, id, enable }: TokenInfo): Promise<void> {
-  logger.debug('Saving tokens:', { enable });
+export async function saveTokens({ token, refreshToken, expiresIn, id }: TokenInfo): Promise<void> {
   try {
     if (!token?.trim()) throw new Error('Access token is required');
 
@@ -127,10 +120,6 @@ export async function saveTokens({ token, refreshToken, expiresIn, id, enable }:
     if (refreshToken?.trim()) await setRefreshToken(refreshToken);
     else secureRemove(REFRESH_TOKEN_KEY);
 
-    if (typeof enable === 'boolean') {
-      await setTwoFactorEnabled(enable);
-    }
-
     if (expiresIn && Number.isFinite(expiresIn) && expiresIn > 0) {
       await setTokenExpiry(Date.now() + expiresIn * 1000);
     } else {
@@ -138,7 +127,6 @@ export async function saveTokens({ token, refreshToken, expiresIn, id, enable }:
       expiryDate ? await setTokenExpiry(expiryDate.getTime()) : secureRemove(TOKEN_EXPIRY_KEY);
     }
 
-    logger.debug('✅ Tokens saved', { hasRefreshToken: !!refreshToken, hasExpiry: !!expiresIn, hasUserId: !!id, enable });
   } catch (error) {
     logger.error('❌ Failed to save tokens:', error);
     throw error;
@@ -146,23 +134,20 @@ export async function saveTokens({ token, refreshToken, expiresIn, id, enable }:
 }
 
 export async function getAllTokens() {
-  const [accessToken, refreshToken, expiry, id, twoFactorEnabled] = await Promise.all([
+  const [accessToken, refreshToken, expiry, id] = await Promise.all([
     getAccessToken(),
     getRefreshToken(),
     getTokenExpiry(),
     getId(),
-    getTwoFactorEnabled()
   ]);
-  return { accessToken, refreshToken, expiry, id, twoFactorEnabled };
+  return { accessToken, refreshToken, expiry, id };
 }
 
 export function clearTokens(): void {
-  [ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_EXPIRY_KEY, ID_KEY, TWO_FACTOR_KEY].forEach(secureRemove);
+  [ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY, TOKEN_EXPIRY_KEY, ID_KEY].forEach(secureRemove);
   cryptoKey = null;
-  logger.debug('🗑️ All tokens cleared');
 }
 
-// ✅ Nauja funkcija: Hydratuoja react-query cache iš saugojimo
 export async function hydrateAuthQuery(queryClient: any) {
   const tokens = await getAllTokens();
   queryClient.setQueryData(['auth-tokens'], {
@@ -170,8 +155,7 @@ export async function hydrateAuthQuery(queryClient: any) {
     userId: tokens.id,
     hasAccessToken: !!tokens.accessToken,
     hasUserId: !!tokens.id,
-    hasValidToken: !!tokens.accessToken && !!tokens.id,
-    twoFactorEnabled: tokens.twoFactorEnabled ?? false,
+    hasValidToken: !!tokens.accessToken && !!tokens.id
   });
   return tokens;
 }

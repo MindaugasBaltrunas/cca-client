@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../../../infrastructure/services';
 import { logger } from '../../../shared/utils/logger';
 import { saveTokens } from '../../../infrastructure/services/tokenStorage';
-import { AuthCacheData, AuthMutationHandlers, AuthResponse, AuthTokens, AuthUser, TwoFactorSetupResponse, VerifyTwoFactorParams } from '../../../shared/types/api.types';
+import { AuthCacheData, AuthMutationHandlers, AuthResponse, AuthTokens, AuthUser, LoginState, SignUpData, TwoFactorSetupResponse, VerifyTwoFactorParams } from '../../../shared/types/api.types';
 
 export const useAuthMutations = ({
   handleAuthSuccess,
@@ -54,13 +54,13 @@ export const useAuthMutations = ({
       expiresAt: expiresAt !== undefined ? Number(expiresAt) : undefined,
     });
 
-    const authStatus = determineAuthStatus(authResponse.status, enabled);
+    const authStatus = determineAuthStatus(authResponse.success, enabled);
     await handleAuthStatus(authStatus, {
       token: token!,
       userId: userId!,
       refreshToken,
       enabled: enabled ?? false,
-      userData: undefined, // AuthResponse.data doesn't extend AuthUser in your interface
+      userData: undefined,
     });
   };
 
@@ -83,9 +83,8 @@ export const useAuthMutations = ({
     enabled: boolean;
     expiresAt?: number;
   }): Promise<void> => {
-    const { token, userId, refreshToken, enabled, expiresAt } = params;
+    const { token, userId, refreshToken, enabled } = params;
 
-    // Update cache
     updateAuthCache({
       accessToken: token,
       userId,
@@ -93,21 +92,18 @@ export const useAuthMutations = ({
       enable: enabled,
     });
 
-    // Persist to storage
     await saveTokens({
       token,
       id: userId,
       refreshToken,
       enable: enabled,
     });
-
-    logger.debug('Auth state updated:', { enabled, expiresAt });
   };
 
-  const determineAuthStatus = (status: 'success' | 'error' | 'pending', enabled?: boolean) => ({
-    isSuccess: status === 'success',
-    needsTwoFactorSetup: status === 'success' && !enabled,
-    canCompleteLogin: status === 'success' && enabled,
+  const determineAuthStatus = (success: boolean, enabled?: boolean) => ({
+    isSuccess: success,
+    needsTwoFactorSetup: success && !enabled,
+    canCompleteLogin: success && enabled,
   });
 
   const handleAuthStatus = async (
@@ -145,8 +141,14 @@ export const useAuthMutations = ({
     }
   };
 
-  const loginMutation = useMutation({
-    mutationFn: authApi.login,
+  const loginMutation = useMutation<AuthResponse, Error, LoginState>({
+    mutationFn: async (credentials) => {
+      const result = await authApi.login(credentials);
+      if ('success' in result && 'meta' in result) {
+        return result as AuthResponse;
+      }
+      throw new Error((result as any)?.message || 'Login failed');
+    },
     onSuccess: (authResponse: AuthResponse) => processAuthResponse(authResponse),
     onError: (error: Error) => {
       logger.error('Login failed:', error);
@@ -154,8 +156,14 @@ export const useAuthMutations = ({
     },
   });
 
-  const registerMutation = useMutation({
-    mutationFn: authApi.register,
+  const registerMutation = useMutation<AuthResponse, Error, SignUpData>({
+    mutationFn: async (userData) => {
+      const result = await authApi.register(userData);
+      if ('success' in result && 'meta' in result) {
+        return result as AuthResponse;
+      }
+      throw new Error((result as any)?.message || 'Registration failed');
+    },
     onSuccess: (authResponse: AuthResponse) => processAuthResponse(authResponse, true),
     onError: (error: Error) => {
       logger.error('Registration failed:', error);
@@ -211,7 +219,13 @@ export const useAuthMutations = ({
   });
 
   const enable2FAMutation = useMutation<AuthResponse, Error, string>({
-    mutationFn: authApi.enable2FA,
+    mutationFn: async (credentials) => {
+      const result = await authApi.enable2FA;
+      if ('success' in result && 'meta' in result) {
+        return result as unknown as AuthResponse;
+      }
+      throw new Error((result as any)?.message || 'Login failed');
+    },
     onSuccess: async (response) => {
       logger.info('2FA enabled successfully', response);
 

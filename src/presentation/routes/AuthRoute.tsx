@@ -2,6 +2,7 @@ import React from "react";
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 import Preloader from "../components/Preloader/preloader";
 import { useAuthState } from "../../core/auth/hooks/useAuthState";
+import { logger } from "../../shared/utils/logger";
 
 export interface AuthRouteProps {
   fallbackPath?: string;
@@ -20,6 +21,8 @@ export const AuthRoute: React.FC<AuthRouteProps> = ({
 }) => {
   const location = useLocation();
   const { isAuthenticated, tokenLoading, authState } = useAuthState();
+
+  logger.debug("authState", authState)
 
   if (tokenLoading) {
     return <Preloader isLoading />;

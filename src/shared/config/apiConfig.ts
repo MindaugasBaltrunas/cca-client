@@ -22,12 +22,6 @@ const BASE_URL = getEnvVar('REACT_APP_API_BASE_URL');
 const API_SECRET = getEnvVar('REACT_APP_API_SECRET');
 const API_KEY = getEnvVar('REACT_APP_API_KEY', '', false);
 
-logger.info('API Configuration:', {
-  baseUrl: BASE_URL,
-  hasApiSecret: !!API_SECRET,
-  hasApiKey: !!API_KEY,
-});
-
 export const API_CONFIG = {
   BASE_URL,
   API_SECRET,

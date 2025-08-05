@@ -50,7 +50,6 @@ export interface AuthenticationActions {
   enableTwoFactorAuth: (token: string) => Promise<any>;
   logout: () => void;
   clearErrors: () => void;
-  // getCurrentUserId: () => string | null;
   enterTwoFactorFlow: (userId: string, token: string) => void;
   clearAuthState: () => void;
 }

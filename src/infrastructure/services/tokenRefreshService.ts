@@ -1,4 +1,4 @@
-import { AuthResponse } from '../../shared/types/api.types';
+import { ApiErrorResponse, AuthResponse } from '../../shared/types/api.types';
 import { logger } from '../../shared/utils/logger';
 import { clearTokens, getRefreshToken, saveTokens } from './tokenStorage';
 
@@ -28,9 +28,7 @@ const createTokenRefreshService = () => {
     isRefreshing = status;
   };
 
-  const refreshAccessToken = async (
-    refreshTokenApi: (token: string) => Promise<AuthResponse>
-  ): Promise<AuthResponse> => {
+  const refreshAccessToken = async (refreshTokenApi: (token: string) => Promise<AuthResponse | ApiErrorResponse>): Promise<AuthResponse | ApiErrorResponse> => {
     const refreshToken = await getRefreshToken();
 
     if (!refreshToken) {
@@ -41,23 +39,28 @@ const createTokenRefreshService = () => {
     try {
       setRefreshInProgress(true);
 
-      const response = await refreshTokenApi(refreshToken);
+      const response: AuthResponse | ApiErrorResponse = await refreshTokenApi(refreshToken);
 
-      if (response.status === 'success' && response.data) {
-        const { accessToken, refreshToken: newRefreshToken } = response.data;
+      if (isAuthResponse(response)) {
+        if (response.success && response.data) {
+          const { accessToken, refreshToken: newRefreshToken } = response.data;
 
-        await saveTokens({
-          token: accessToken as string,
-          refreshToken: newRefreshToken,
-          enable: true
-        });
+          await saveTokens({
+            token: accessToken as string,
+            refreshToken: newRefreshToken,
+            enable: true
+          });
 
-        if (accessToken) {
-          onTokenRefreshed(accessToken);
+          if (accessToken) {
+            onTokenRefreshed(accessToken);
+          } else {
+            throw new Error('Access token is undefined');
+          }
+
+          return response;
         } else {
-          throw new Error('Access token is undefined');
+          throw new Error(response.message || 'Token refresh failed');
         }
-        return response;
       } else {
         throw new Error(response.message || 'Token refresh failed');
       }
@@ -68,6 +71,11 @@ const createTokenRefreshService = () => {
       setRefreshInProgress(false);
     }
   };
+
+  function isAuthResponse(response: AuthResponse | ApiErrorResponse): response is AuthResponse {
+    return (response as AuthResponse).success !== undefined;
+  }
+
 
   return {
     subscribeToTokenRefresh,

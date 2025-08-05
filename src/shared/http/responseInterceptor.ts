@@ -4,7 +4,7 @@ import { tokenRefreshService } from '../../infrastructure/services/tokenRefreshS
 import { logger } from '../utils/logger';
 import { EventBus } from '../utils/eventBus';
 import { API_CONFIG } from '../config/apiConfig';
-import { AuthResponse } from '../../shared/types/api.types';
+import { ApiErrorResponse, AuthResponse } from '../../shared/types/api.types';
 import { clearTokens } from '../../infrastructure/services/tokenStorage';
 
 interface ExtendedRequestConfig extends InternalAxiosRequestConfig {
@@ -79,21 +79,26 @@ const performTokenRefresh = async (
 
         const refreshResponse = await tokenRefreshService.refreshAccessToken(refreshTokenApi);
 
-        if (refreshResponse.status === 'success' && refreshResponse.data?.accessToken) {
+        if (isAuthResponse(refreshResponse) && refreshResponse.success && refreshResponse.data?.accessToken) {
             return retryRequestWithNewToken(
                 axiosInstance,
                 originalRequest,
                 refreshResponse.data.accessToken
             );
-        } else {
-            handleAuthFailure();
-            return Promise.reject(new Error('Token refresh failed with error response'));
         }
+
+        handleAuthFailure();
+        return Promise.reject(new Error(refreshResponse.message || 'Token refresh failed'));
     } catch (refreshError) {
         handleAuthFailure();
         return Promise.reject(refreshError);
     }
 };
+
+function isAuthResponse(response: AuthResponse | ApiErrorResponse): response is AuthResponse {
+    return (response as AuthResponse).success !== undefined;
+}
+
 
 export const createResponseErrorHandler = (
     axiosInstance: AxiosInstance,
@@ -119,3 +124,5 @@ export const createResponseErrorHandler = (
 
     return Promise.reject(error);
 };
+
+

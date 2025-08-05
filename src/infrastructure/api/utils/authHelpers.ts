@@ -24,7 +24,7 @@ export const determineExpiresIn = (expiresAt?: number): number => {
  */
 export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
   try {
-    if (response.status !== 'success' || !response.data) {
+    if (response.success || !response.data) {
       throw new Error('Invalid auth response');
     }
 
@@ -39,7 +39,7 @@ export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void
       throw new Error('User ID is missing');
     }
 
-    const expiresIn = determineExpiresIn(expiresAt);
+    const expiresIn = determineExpiresIn(Number(expiresAt));
 
     await saveTokens({
       token: accessToken,

@@ -7,7 +7,7 @@ import { clearTokens, saveTokens } from '../services/tokenStorage';
 import { determineExpiresIn } from './utils/authHelpers';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
-  if (response.status === 'success' && response.data) {
+  if (response.success && response.data) {
     const { accessToken, refreshToken, userId, expiresAt, enabled } = response.data;
 
     await saveTokens({
@@ -26,10 +26,10 @@ const handleApiError = (error: unknown, context: string): ApiErrorResponse => {
   logger.error(`${context}:`, error);
 
   return {
-    status: 'error',
+    status: "error",
     message: error instanceof Error ? error.message : `${context} occurred`,
     code: error instanceof Error ? error.name : 'UNKNOWN',
-    details: error,
+    details: error
   };
 };
 
@@ -38,7 +38,7 @@ const process2FAOperation = async (
   endpoint: string,
   successEvent: string,
   errorContext: string
-): Promise<AuthResponse> => {
+): Promise<AuthResponse | ApiErrorResponse> => {
   try {
     const safeToken = sanitizeString(token);
     const response = await http.post(endpoint, { token: safeToken });
@@ -52,9 +52,10 @@ const process2FAOperation = async (
   }
 };
 
-export const login = async (credentials: LoginState): Promise<AuthResponse> => {
+export const login = async (credentials: LoginState): Promise<AuthResponse | ApiErrorResponse> => {
   try {
     const safeCredentials = sanitizeObject(credentials);
+
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.SIGN_IN, safeCredentials);
     await handleSuccessfulAuth(response.data);
     return response.data;
@@ -65,7 +66,7 @@ export const login = async (credentials: LoginState): Promise<AuthResponse> => {
 
 export const adminLogin = async (
   credentials: LoginState & { adminPassword: string }
-): Promise<AuthResponse> => {
+): Promise<AuthResponse | ApiErrorResponse> => {
   try {
     logger.debug('Attempting admin login');
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.ADMIN_SIGN_IN, credentials);
@@ -79,7 +80,7 @@ export const adminLogin = async (
   }
 };
 
-export const register = async (userData: SignUpData): Promise<AuthResponse> => {
+export const register = async (userData: SignUpData): Promise<AuthResponse | ApiErrorResponse> => {
   try {
     logger.debug('Attempting user registration');
     const safeUserData = sanitizeObject(userData);
@@ -95,7 +96,7 @@ export const register = async (userData: SignUpData): Promise<AuthResponse> => {
 };
 
 
-export const logout = async (userId: string): Promise<AuthResponse> => {
+export const logout = async (userId: string): Promise<AuthResponse | ApiErrorResponse> => {
   try {
     logger.debug('Attempting user logout');
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.SIGN_OUT, sanitizeObject({ userId }));
@@ -121,7 +122,7 @@ export const setup2FA = async (): Promise<TwoFactorSetupResponse> => {
   }
 };
 
-export const enable2FA = (token: string): Promise<AuthResponse> => {
+export const enable2FA = (token: string): Promise<AuthResponse | ApiErrorResponse> => {
   const safePayload = sanitizeObject({ token });
   return process2FAOperation(
     safePayload.token,
@@ -131,7 +132,7 @@ export const enable2FA = (token: string): Promise<AuthResponse> => {
   );
 };
 
-export const disable2FA = (token: string): Promise<AuthResponse> => {
+export const disable2FA = (token: string): Promise<AuthResponse | ApiErrorResponse> => {
   const safePayload = sanitizeObject({ token });
   return process2FAOperation(
     safePayload.token,
@@ -160,9 +161,8 @@ export const verify2FA = async (userId: string, token: string): Promise<TwoFacto
 };
 
 
-export const refreshToken = async (rt: string): Promise<AuthResponse> => {
+export const refreshToken = async (rt: string): Promise<AuthResponse | ApiErrorResponse> => {
   try {
-    logger.debug('Refreshing authentication token');
     const safePayload = sanitizeObject({ refreshToken: rt });
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.REFRESH_TOKEN, safePayload);
     return response.data;

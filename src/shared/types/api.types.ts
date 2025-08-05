@@ -98,7 +98,8 @@ export interface AuthSuccessParams {
 }
 
 export interface AuthResponse {
-  status: 'success' | 'error' | 'pending';
+  message: string;
+  success: boolean;
   data?: {
     accessToken?: string;
     userId?: string;
@@ -106,6 +107,10 @@ export interface AuthResponse {
     enabled?: boolean;
     expiresAt: string;
   } & Partial<AuthUser>;
+  meta: {
+    timestamp: string;
+    status: string;
+  }
 }
 
 export interface AuthMutationHandlers {
