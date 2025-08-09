@@ -1,12 +1,34 @@
+import { ROUTE_CATEGORIES } from "../../../presentation/routes/constants/constants";
+import { AuthStatusValue } from "../../../shared/types/api.types";
+
+export type AuthState = "NO_AUTH" | "NEEDS_SETUP" | "PENDING_VERIFICATION" | "FULL_AUTH";
+export type RouteCategory = keyof typeof ROUTE_CATEGORIES;
+
+export interface AuthRouteProps {
+  fallbackPath?: string;
+  requireFullAuth?: boolean;
+  require2FA?: boolean;
+  allowPublic?: boolean;
+  redirectIfAuthenticated?: string;
+  allowedRoutes?: readonly RouteCategory[] | RouteCategory[];
+}
+
+export interface AuthContext {
+  isAuthenticated: boolean;
+  tokenLoading: boolean;
+  authState: string;
+  has2FAEnabled: boolean;
+}
+
 export interface TokenData {
   accessToken: string | null;
   userId: string | null;
+  hasUserId: boolean;
   hasValidToken: boolean;
   hasAccessToken: boolean;
-  hasUserId: boolean;
-  enable: boolean;
-  verified?: boolean;
-  status?: "basic_auth" | "needs_setup" | "pending_verification" | "full_auth";
+  enabled: boolean;
+  verified: boolean;
+  status: AuthState;
 }
 
 
@@ -73,6 +95,37 @@ export interface LoginState extends BaseCredentials { }
 
 export interface SignUpData extends BaseCredentials {
   confirmPassword?: string;
-  firstName?: string;
-  lastName?: string;
+  name?: string;
+  role?: string;
+  adminPassword?: string;
 }
+
+export interface AuthSuccessPayload {
+  token: string;
+  userId: string;
+  refreshToken?: string;
+  enabled: boolean;
+  verified?: boolean;
+  status?: AuthStatusValue;
+  userData?: AuthUser;
+}
+
+
+// export interface UseAuthenticationResult {
+//   isLoading: boolean;
+//   error: unknown;
+//   signIn: (data: LoginState) => Promise<any>;
+//   signUp: (data: SignUpData) => Promise<any>;
+//   verifyTwoFactorAuth: (userId: string, token: string) => Promise<any | null>;
+//   setupTwoFactorAuth: () => Promise<any>;
+//   enableTwoFactorAuth: (userId: string) => Promise<any>;
+//   logout: () => void;
+//   clearErrors: () => void;
+//   enterTwoFactorFlow: (userId: string) => void;
+//   clearAuthState: () => void;
+//   loginError: unknown;
+//   registerError: unknown;
+//   verify2FAError: unknown;
+//   setup2FAError: unknown;
+//   enable2FAError: unknown;
+// }

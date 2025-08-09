@@ -16,7 +16,6 @@ export interface TokenInfo {
   token: string;
   refreshToken?: string | null | undefined;
   expiresIn?: number | undefined;
-  enable: boolean;
 }
 
 interface EncryptedData { iv: number[]; data: number[]; }

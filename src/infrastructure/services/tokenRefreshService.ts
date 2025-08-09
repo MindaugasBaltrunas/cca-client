@@ -48,7 +48,6 @@ const createTokenRefreshService = () => {
           await saveTokens({
             token: accessToken as string,
             refreshToken: newRefreshToken,
-            enable: true
           });
 
           if (accessToken) {

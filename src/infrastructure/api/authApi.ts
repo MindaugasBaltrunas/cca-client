@@ -8,14 +8,14 @@ import { determineExpiresIn } from './utils/authHelpers';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
   if (response.success && response.data) {
-    const { accessToken, refreshToken, userId, expiresAt, enabled } = response.data;
+    const { accessToken, refreshToken, userId, expiresAt } = response.data;
+    const enabled = response.data.auth?.enable;
 
     await saveTokens({
       token: accessToken ?? '',
       refreshToken,
       expiresIn: expiresAt ? determineExpiresIn(Number(expiresAt)) : undefined,
       id: userId ?? '',
-      enable: enabled ?? false
     });
 
     EventBus.emit('auth:login', response);
@@ -150,7 +150,7 @@ export const verify2FA = async (userId: string, token: string): Promise<TwoFacto
 
     if (response.data.status === 'success' && response.data.data) {
       const { accessToken, refreshToken } = response.data.data;
-      await saveTokens({ token: accessToken, refreshToken, enable: true });
+      await saveTokens({ token: accessToken, refreshToken });
       EventBus.emit('auth:2faVerified', response.data);
     }
     return response.data;

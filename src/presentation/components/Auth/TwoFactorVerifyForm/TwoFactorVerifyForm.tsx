@@ -1,26 +1,23 @@
 import React from "react";
 import { Formik } from "formik";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../../../core/auth/context/AuthContext";
 import { getId } from "../../../../infrastructure/services/tokenStorage";
 import { validationSchema, initialValues } from "./formSchema";
 import { TwoFactorFormContent } from "./TwoFactorFormContent";
 import { FormValues } from "./types";
 import styles from "./styles.module.scss";
+import { useAuthState } from "../../../../core/auth/hooks/useAuthState";
 
 interface TwoFactorVerifyFormProps {
   onSuccess?: () => void;
-  redirectTo?: string;
 }
 
 const TwoFactorVerifyForm: React.FC<TwoFactorVerifyFormProps> = ({
   onSuccess,
-  redirectTo = "/",
 }) => {
   const { verifyTwoFactorAuth, error, isLoading } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from?.pathname || redirectTo;
 
   const handleSubmit = async (
     values: FormValues,
@@ -33,11 +30,10 @@ const TwoFactorVerifyForm: React.FC<TwoFactorVerifyFormProps> = ({
 
       const result = await verifyTwoFactorAuth(userId, values.verificationCode);
 
-      if (!result || result.status !== "success")
+      if (!result || result.success)
         throw new Error(result?.status || "Verification failed");
 
       onSuccess?.();
-      navigate(from, { replace: true });
     } catch (err) {
       const message =
         err instanceof Error

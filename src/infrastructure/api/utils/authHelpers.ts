@@ -46,7 +46,6 @@ export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void
       refreshToken: refreshToken || undefined,
       expiresIn: expiresIn > 0 ? expiresIn : undefined,
       id: userId,
-      enable: true
     });
 
     EventBus.emit('auth:login', response);
