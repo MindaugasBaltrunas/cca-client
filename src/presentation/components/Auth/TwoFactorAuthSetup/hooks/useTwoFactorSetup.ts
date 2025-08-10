@@ -1,10 +1,10 @@
 import { useState, useCallback } from "react";
 import { useAuth } from "../../../../../core/auth/context/AuthContext";
 import { logger } from "../../../../../shared/utils/logger";
-import { TwoFactorSetupResponse } from "../../../../../shared/types/api.types";
+import { AuthResponse, TwoFactorSetupResponse } from "../../../../../shared/types/api.types";
 
 interface UseTwoFactorSetupReturn {
-  qrCodeUrl: string | null;
+  qrCodeUrl: AuthResponse | null;
   error: string | null;
   isLoading: boolean;
   isVerifying: boolean;
@@ -14,7 +14,7 @@ interface UseTwoFactorSetupReturn {
 }
 
 export const useTwoFactorSetup = (): UseTwoFactorSetupReturn => {
-  const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null);
+  const [qrCodeUrl, setQrCodeUrl] = useState<AuthResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isVerifying, setIsVerifying] = useState(false);

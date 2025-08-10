@@ -4,24 +4,16 @@ import { saveTokens } from '../../services/tokenStorage';
 import { AuthResponse } from '../../../shared/types/api.types';
 
 
-/**
- * Utility funkcija apskaičiuoti expiresIn iš expiresAt
- */
 export const determineExpiresIn = (expiresAt?: number): number => {
   if (!expiresAt) return 0;
 
-  // Jei expiresAt atrodo kaip timestamp (didelis skaičius > 1B)
   if (expiresAt > 1000000000) {
     return Math.max(0, Math.floor((expiresAt - Date.now()) / 1000));
   }
 
-  // Jei expiresAt atrodo kaip duration sekundėmis
   return Math.max(0, expiresAt);
 };
 
-/**
- * Centralizuotas auth success handling
- */
 export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
   try {
     if (response.success || !response.data) {
@@ -30,7 +22,6 @@ export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void
 
     const { accessToken, refreshToken, userId, expiresAt } = response.data;
 
-    // Validacija
     if (!accessToken?.trim()) {
       throw new Error('Access token is missing');
     }
@@ -49,17 +40,12 @@ export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void
     });
 
     EventBus.emit('auth:login', response);
-    logger.debug('✅ Authentication successful', { userId, expiresIn });
-
   } catch (error) {
     logger.error('❌ Failed to handle successful auth:', error);
     throw error;
   }
 };
 
-/**
- * Debugging helper
- */
 export const debugTokenData = async () => {
   const { getAllTokens, getId, isTokenExpired } = await import('../../services/tokenStorage');
   const tokens = await getAllTokens();

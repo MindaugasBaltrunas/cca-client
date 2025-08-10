@@ -1,10 +1,10 @@
 import React from "react";
 import { Formik, Form } from "formik";
-import FormInput from "../../../InputFields/FormInput"; 
-import { 
-  TwoFactorFormValues, 
-  twoFactorValidationSchema, 
-  initialFormValues 
+import FormInput from "../../../InputFields/FormInput";
+import {
+  TwoFactorFormValues,
+  twoFactorValidationSchema,
+  initialFormValues,
 } from "../validation/twoFactorValidation";
 import styles from "./VerificationForm.module.scss";
 
@@ -13,9 +13,9 @@ interface VerificationFormProps {
   isVerifying: boolean;
 }
 
-const VerificationForm: React.FC<VerificationFormProps> = ({ 
-  onSubmit, 
-  isVerifying 
+const VerificationForm: React.FC<VerificationFormProps> = ({
+  onSubmit,
+  isVerifying,
 }) => {
   const handleSubmit = async (
     values: TwoFactorFormValues,
@@ -55,8 +55,8 @@ const VerificationForm: React.FC<VerificationFormProps> = ({
             type="submit"
             disabled={!isButtonEnabled(isValid, values.verificationCode)}
             className={`${styles.submitButton} ${
-              isButtonEnabled(isValid, values.verificationCode) 
-                ? styles.enabled 
+              isButtonEnabled(isValid, values.verificationCode)
+                ? styles.enabled
                 : styles.disabled
             }`}
           >

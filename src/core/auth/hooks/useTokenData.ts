@@ -16,7 +16,7 @@ export const useTokenData = () => {
       const currentData = queryClient.getQueryData<TokenData>(['auth-tokens']);
       const hasAccessToken = Boolean(accessToken);
       const hasUserId = Boolean(userId);
-      const enabled = currentData?.enabled ?? true;
+      const enabled = currentData?.enabled ?? false;
       const hasValidToken = hasAccessToken && hasUserId;
       const status = currentData?.status || "NO_AUTH";
       const verified = currentData?.verified ?? false;

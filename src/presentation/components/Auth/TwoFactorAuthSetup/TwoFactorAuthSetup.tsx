@@ -7,22 +7,17 @@ import QrCodeDisplay from "./components/QrCodeDisplay";
 import VerificationForm from "./components/VerificationForm";
 import styles from "./TwoFactorAuthSetup.module.scss";
 import { safeDisplay } from "../../../../infrastructure/services";
+import { logger } from "../../../../shared/utils/logger";
 
 const TwoFactorAuthSetup: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  const { error, isLoading, isVerifying, setupQrCode, verifyCode, clearError } =
+    useTwoFactorSetup();
+
+  const qrCodeUrl = searchParams.get("qr") ?? "";
   
-  const { 
-    error, 
-    isLoading, 
-    isVerifying, 
-    setupQrCode, 
-    verifyCode, 
-    clearError 
-  } = useTwoFactorSetup();
-
-  const qrCodeUrl = searchParams.get('qr') ?? '';
-
   const handleVerifyCode = async (code: string): Promise<void> => {
     try {
       const success = await verifyCode(code);
@@ -31,38 +26,48 @@ const TwoFactorAuthSetup: React.FC = () => {
         navigate("/verify-2fa");
       }
     } catch (err) {
-      console.error("Verification error:", err);
+      logger.error("Verification error:", err);
     }
   };
 
   const handleSetupQrCode = async (): Promise<void> => {
-    try {      
+    try {
       const qrUrl = await setupQrCode();
+
       if (qrUrl) {
-        setSearchParams({ qr: String(qrUrl) });
+        setSearchParams({ qr: String(qrUrl.data.qrCode) });
       }
     } catch (err) {
       console.error("QR setup error:", err);
-      setSearchParams({}); 
+      setSearchParams({});
     }
   };
 
   const showQrSection = !error && !isLoading && !!qrCodeUrl;
-
+  logger.debug("showQrSection", showQrSection);
   return (
     <div className={styles.container}>
       <h2 className={styles.title}>Set Up Two-Factor Authentication</h2>
 
       <div className={styles.content}>
-        {error && <ErrorMessage message={safeDisplay.text(error)} onClose={clearError} />}
+        {error && (
+          <ErrorMessage
+            message={safeDisplay.text(error)}
+            onClose={clearError}
+          />
+        )}
 
         <Preloader isLoading={isLoading} />
 
         <div className={styles.debug}>
-          <strong>Debug Info:</strong><br />
-          Error: {safeDisplay.text(error || 'none')}<br />
-          Loading: {isLoading.toString()}<br />
-          QR URL: {qrCodeUrl ? 'present' : 'null'}<br />
+          <strong>Debug Info:</strong>
+          <br />
+          Error: {safeDisplay.text(error || "none")}
+          <br />
+          Loading: {isLoading.toString()}
+          <br />
+          QR URL: {qrCodeUrl ? "present" : "null"}
+          <br />
           Show QR Section: {showQrSection.toString()}
         </div>
 

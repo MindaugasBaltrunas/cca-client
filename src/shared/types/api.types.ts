@@ -1,7 +1,3 @@
-// -----------------------------
-// User and Role Models
-// -----------------------------
-
 import { AuthSuccessPayload } from "../../core/auth/types/auth.types";
 
 export type UserRole = 'admin' | 'user';
@@ -69,23 +65,13 @@ export interface AuthCacheData {
   accessToken: string | null;
   userId: string | null;
   refreshToken?: string;
-  enable: boolean;
+  enabled: boolean;
   hasAccessToken: boolean;
   hasUserId: boolean;
   hasValidToken: boolean;
   verified?: boolean;
   status?: string;
 }
-
-// export interface AuthSuccessParams {
-//   token: string;
-//   userId: string;
-//   refreshToken?: string;
-//   enabled: boolean;
-//   verified?: boolean;
-//   status?: AuthStatusValue | undefined;
-//   userData?: AuthUser;
-// }
 
 export interface AuthMutationHandlers {
   handleAuthSuccess: (params: AuthSuccessPayload) => Promise<void>;

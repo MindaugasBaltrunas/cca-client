@@ -3,7 +3,6 @@ import { Navigate, type Location } from "react-router-dom";
 import { isAllowedRoute, getRouteCategory } from "./routeValidator";
 import { AuthState } from "../../../core/auth/types/auth.types";
 import { ALLOWED_ROUTES } from "../constants/constants";
-import { logger } from "../../../shared/utils/logger";
 
 const normalize = (path: string): string => path.replace(/\/+$/, "") || "/";
 
@@ -24,7 +23,7 @@ export const getAuthRedirect = (
 
   const routeCategory = getRouteCategory(current);
 
-  // NOT_AUTHENTICATED: Only allow public routes (login/signup)
+  // NO_AUTH: Only allow public routes (login/signup)
   if (authState === "NO_AUTH") {
     if (routeCategory !== "PUBLIC") {
       return (
@@ -46,6 +45,16 @@ export const getAuthRedirect = (
         />
       );
     }
+    return null;
+  }
+
+  // BASIC_AUTH: User is authenticated but may not have full privileges
+  if (authState === "BASIC_AUTH") {
+    // If they're on public routes (like login), redirect to dashboard
+    if (routeCategory === "PUBLIC") {
+      return <Navigate to={ALLOWED_ROUTES.DASHBOARD} replace />;
+    }
+    // Allow access to protected routes since they have basic auth
     return null;
   }
 

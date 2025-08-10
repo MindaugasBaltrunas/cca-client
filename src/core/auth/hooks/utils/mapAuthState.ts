@@ -8,6 +8,8 @@ export const mapAuthState = (status?: string): AuthState => {
             return "PENDING_VERIFICATION";
         case "FULL_AUTH":
             return "FULL_AUTH";
+        case "BASIC_AUTH":
+            return "BASIC_AUTH";
         default:
             return "NO_AUTH";
     }

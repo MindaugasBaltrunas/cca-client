@@ -10,28 +10,48 @@ import { logger } from "../../../shared/utils/logger";
 
 export const AuthRoute: React.FC<AuthRouteProps> = ({
   fallbackPath = ALLOWED_ROUTES.LOGIN,
-  // requireFullAuth = false,
-  // require2FA = false,
-  // allowPublic = false,
-  // redirectIfAuthenticated,
   allowedRoutes,
 }) => {
   const location = useLocation();
   const { isAuthenticated, tokenLoading, authState, has2FAEnabled } =
     useAuthState();
 
+  logger.debug(
+    "AuthRoute",
+    isAuthenticated,
+    tokenLoading,
+    authState,
+    has2FAEnabled
+  );
+
   if (tokenLoading) {
     return <Preloader isLoading />;
   }
-  logger.debug("authState", authState);
-  // Map authState to our AuthState type
-  const mappedAuthState: AuthState = !has2FAEnabled
-    ? "NEEDS_SETUP"
-    : authState === "PENDING_VERIFICATION"
-    ? "PENDING_VERIFICATION"
-    : authState === "FULL_AUTH"
-    ? "FULL_AUTH"
-    : "NO_AUTH";
+
+  // Fixed logic: Handle BASIC_AUTH properly
+  const mappedAuthState: AuthState = (() => {
+    // If user has BASIC_AUTH, they're logged in but may need 2FA setup
+    if (authState === "BASIC_AUTH") {
+      return !has2FAEnabled ? "NEEDS_SETUP" : "BASIC_AUTH";
+    }
+    
+    // Handle other states
+    if (authState === "PENDING_VERIFICATION" && has2FAEnabled) {
+      return "PENDING_VERIFICATION";
+    }
+    
+    if (authState === "FULL_AUTH") {
+      return "FULL_AUTH";
+    }
+    
+    // Handle NEEDS_SETUP case
+    if (authState === "NEEDS_SETUP") {
+      return "NEEDS_SETUP";
+    }
+    
+    // Default to NO_AUTH
+    return "NO_AUTH";
+  })();
 
   logger.debug("mappedAuthState", mappedAuthState);
 
@@ -42,15 +62,6 @@ export const AuthRoute: React.FC<AuthRouteProps> = ({
     has2FAEnabled,
     isAuthenticated
   );
-  logger.debug(
-    "redirect",
-    mappedAuthState,
-    location.pathname,
-    location,
-    has2FAEnabled,
-    isAuthenticated
-  );
-  logger.debug("redirect", redirect);
 
   if (redirect) {
     return redirect;

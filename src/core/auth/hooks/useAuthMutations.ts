@@ -48,7 +48,7 @@ export const useAuthMutations = ({
       accessToken: data.accessToken ?? prev?.accessToken ?? null,
       refreshToken: data.refreshToken ?? prev?.refreshToken,
       userId: data.userId ?? prev?.userId ?? null,
-      enable: data.enable ?? prev?.enable ?? false,
+      enabled: data.enable ?? prev?.enabled ?? false,
       verified: data.verified ?? prev?.verified ?? false,
       status: data.status ?? prev?.status,
       hasAccessToken: !!(data.accessToken ?? prev?.accessToken),
@@ -252,31 +252,32 @@ export const useAuthMutations = ({
     },
   });
 
-  const enable2FAMutation = useMutation<AuthResponse, Error, string>({
-    mutationFn: async (userId: string) => {
-      const result = await authApi.enable2FA(userId);
-      return handleApiResponse(result as AuthResponse, '2FA enable failed');
-    },
-    onSuccess: async (response: AuthResponse) => {
-      logger.info('2FA enabled successfully');
+const enable2FAMutation = useMutation<AuthResponse, Error, string>({
+  mutationFn: async (userId: string) => {
+    const result = await authApi.enable2FA(userId);
+    return handleApiResponse(result as AuthResponse, '2FA enable failed');
+  },
+  onSuccess: async (response: AuthResponse) => {
+    // The response structure is: response.data.data (not response.data)
+    const responseData = response.data?.auth;
 
-      const { accessToken, userId } = response.data || {};
 
-      if (accessToken && userId) {
-        updateAuthCache({ enable: true });
+    if (responseData && responseData) {
+      // Update cache with the correct enabled status
+      updateAuthCache({ 
+        enable: responseData.enable ?? true, 
+        status: responseData.status,
+      });
 
-        await saveTokens({
-          token: accessToken,
-          id: userId,
-        });
-      }
+    }      
 
-      setNeedsSetup(false);
-    },
-    onError: (error: Error) => {
-      logger.error('2FA enable failed:', error);
-    },
-  });
+    setNeedsSetup(false);
+  },
+  onError: (error: Error) => {
+    logger.error('2FA enable failed:', error);
+  },
+});
+
 
   return {
     loginMutation,

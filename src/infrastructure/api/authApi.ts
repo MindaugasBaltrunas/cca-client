@@ -9,7 +9,6 @@ import { determineExpiresIn } from './utils/authHelpers';
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
   if (response.success && response.data) {
     const { accessToken, refreshToken, userId, expiresAt } = response.data;
-    const enabled = response.data.auth?.enable;
 
     await saveTokens({
       token: accessToken ?? '',
