@@ -1,7 +1,6 @@
 import { ROUTE_CATEGORIES } from "../../../presentation/routes/constants/constants";
-import { AuthStatusValue } from "../../../shared/types/api.types";
+import { AuthStatusValue, AuthSuccessPayload, AuthUser, BaseCredentials, SignUpData } from "../../../shared/types/auth.base.types";
 
-export type AuthState = "NO_AUTH" | "NEEDS_SETUP" | "PENDING_VERIFICATION" | "FULL_AUTH" | "BASIC_AUTH";
 export type RouteCategory = keyof typeof ROUTE_CATEGORIES;
 
 export interface AuthRouteProps {
@@ -28,30 +27,7 @@ export interface TokenData {
   hasAccessToken: boolean;
   enabled: boolean;
   verified: boolean;
-  status: AuthState;
-}
-
-
-export interface AuthStatus {
-  isReady: boolean;
-  isLoggedIn: boolean;
-  tokenData?: TokenData;
-  isLoading: boolean;
-}
-
-export interface RouteAuthStatus {
-  isReady: boolean;
-  isLoggedIn: boolean;
-  hasUserId: boolean;
-  enabled?: boolean;
-  token?: string;
-}
-
-export interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  role: string;
+  status: AuthStatusValue;
 }
 
 export interface AuthenticationState {
@@ -65,8 +41,8 @@ export interface AuthenticationState {
 }
 
 export interface AuthenticationActions {
-  signIn: (credentials: any) => Promise<any>;
-  signUp: (userData: any) => Promise<any>;
+  signIn: (credentials: BaseCredentials) => Promise<any>;
+  signUp: (userData: SignUpData) => Promise<any>;
   verifyTwoFactorAuth: (userId: string, token: string) => Promise<any>;
   setupTwoFactorAuth: () => Promise<any>;
   enableTwoFactorAuth: (token: string) => Promise<any>;
@@ -86,30 +62,6 @@ export interface AuthContextType extends AuthenticationActions {
   isLoading: boolean;
 }
 
-export interface BaseCredentials {
-  email: string;
-  password: string;
-}
-
-export interface LoginState extends BaseCredentials { }
-
-export interface SignUpData extends BaseCredentials {
-  confirmPassword?: string;
-  name?: string;
-  role?: string;
-  adminPassword?: string;
-}
-
-export interface AuthSuccessPayload {
-  token: string;
-  userId: string;
-  refreshToken?: string;
-  enabled: boolean;
-  verified?: boolean;
-  status?: AuthStatusValue;
-  userData?: AuthUser;
-}
-
 export interface AuthStateHook {
   currentUser: AuthUser | null;
   setCurrentUser: (user: AuthUser | null) => void;
@@ -120,3 +72,13 @@ export interface AuthStateHook {
   isAuthenticated: boolean;
   authState: string;
 }
+
+export interface AuthMutationHandlers {
+  handleAuthSuccess: (params: AuthSuccessPayload) => Promise<void>;
+  startTwoFactorFlow: (userId: string) => void;
+  setNeedsSetup: (needsSetup: boolean) => void;
+  resetAuthState: () => void;
+}
+
+
+

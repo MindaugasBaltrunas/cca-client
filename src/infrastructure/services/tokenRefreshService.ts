@@ -1,4 +1,4 @@
-import { ApiErrorResponse, AuthResponse } from '../../shared/types/api.types';
+import { ApiErrorResponse, AuthResponse } from '../../shared/types/api.response.types';
 import { logger } from '../../shared/utils/logger';
 import { clearTokens, getRefreshToken, saveTokens } from './tokenStorage';
 

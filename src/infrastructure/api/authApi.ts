@@ -1,5 +1,6 @@
 import http, { API_CONFIG } from '../../shared/http';
-import { ApiErrorResponse, AuthResponse, LoginState, SignUpData, TwoFactorSetupResponse } from '../../shared/types/api.types';
+import { ApiErrorResponse, AuthResponse, TwoFactorSetupResponse } from '../../shared/types/api.response.types';
+import { LoginData, SignUpData } from '../../shared/types/auth.base.types';
 import { EventBus } from '../../shared/utils/eventBus';
 import { logger } from '../../shared/utils/logger';
 import { sanitizeObject, sanitizeString } from '../services';
@@ -51,7 +52,7 @@ const process2FAOperation = async (
   }
 };
 
-export const login = async (credentials: LoginState): Promise<AuthResponse | ApiErrorResponse> => {
+export const login = async (credentials: LoginData): Promise<AuthResponse | ApiErrorResponse> => {
   try {
     const safeCredentials = sanitizeObject(credentials);
 
@@ -64,7 +65,7 @@ export const login = async (credentials: LoginState): Promise<AuthResponse | Api
 };
 
 export const adminLogin = async (
-  credentials: LoginState & { adminPassword: string }
+  credentials: LoginData & { adminPassword: string }
 ): Promise<AuthResponse | ApiErrorResponse> => {
   try {
     logger.debug('Attempting admin login');

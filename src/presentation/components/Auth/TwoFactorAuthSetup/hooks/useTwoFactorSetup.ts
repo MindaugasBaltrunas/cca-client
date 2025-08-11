@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useAuth } from "../../../../../core/auth/context/AuthContext";
 import { logger } from "../../../../../shared/utils/logger";
-import { AuthResponse, TwoFactorSetupResponse } from "../../../../../shared/types/api.types";
+import { AuthResponse, TwoFactorSetupResponse } from "../../../../../shared/types/api.response.types";
 
 interface UseTwoFactorSetupReturn {
   qrCodeUrl: AuthResponse | null;

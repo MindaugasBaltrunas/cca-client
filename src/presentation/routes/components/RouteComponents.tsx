@@ -1,7 +1,7 @@
 import React from "react";
 import { AuthRoute } from "./AuthRoute";
-import { AuthRouteProps } from "../../../core/auth/types/auth.types";
 import { ALLOWED_ROUTES } from "../constants/constants";
+import { AuthRouteProps } from "../../../core/auth/types/auth.context.types";
 
 const routeConfigs: Record<string, AuthRouteProps> = {
   // Allow login/signup when not authenticated

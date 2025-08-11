@@ -6,10 +6,9 @@ import { useAuth } from "../../../core/auth/context/AuthContext";
 import Preloader from "../../components/Preloader/preloader";
 import styles from "./login.module.scss";
 import { logger } from "../../../shared/utils/logger";
-import { LoginState } from "../../../shared/types/api.types";
 import FormInput from "../../components/InputFields/FormInput";
 import { safeDisplay } from "../../../infrastructure/services";
-import { useAuthState } from "../../../core/auth/hooks/useAuthState";
+import { LoginData } from "../../../shared/types/auth.base.types";
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -18,14 +17,14 @@ const validationSchema = Yup.object({
   password: Yup.string().required("Password is required"),
 });
 
-const initialValues: LoginState = { email: "", password: "" };
+const initialValues: LoginData = { email: "", password: "" };
 
 export const LoginForm: React.FC = () => {
   const { signIn, isLoading } = useAuth();
 
   const handleSubmit = async (
-    values: LoginState,
-    { setSubmitting }: FormikHelpers<LoginState>
+    values: LoginData,
+    { setSubmitting }: FormikHelpers<LoginData>
   ) => {
     try {
       await signIn(values);

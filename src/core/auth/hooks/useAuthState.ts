@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { useTokenData } from "./index";
-import type { AuthUser, AuthStateHook } from "../types/auth.types";
 import { mapAuthState } from "./utils/mapAuthState";
 import { logger } from "../../../shared/utils/logger";
+import { AuthStateHook } from "../types/auth.context.types";
+import { AuthUser } from "../../../shared/types/auth.base.types";
 
 export const useAuthState = (): AuthStateHook => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);

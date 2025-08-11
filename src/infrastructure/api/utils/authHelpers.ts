@@ -1,8 +1,7 @@
 import { logger } from '../../../shared/utils/logger';
 import { EventBus } from '../../../shared/utils/eventBus';
 import { saveTokens } from '../../services/tokenStorage';
-import { AuthResponse } from '../../../shared/types/api.types';
-
+import { AuthResponse } from '../../../shared/types/api.response.types';
 
 export const determineExpiresIn = (expiresAt?: number): number => {
   if (!expiresAt) return 0;

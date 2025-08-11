@@ -4,8 +4,8 @@ import { tokenRefreshService } from '../../infrastructure/services/tokenRefreshS
 import { logger } from '../utils/logger';
 import { EventBus } from '../utils/eventBus';
 import { API_CONFIG } from '../config/apiConfig';
-import { ApiErrorResponse, AuthResponse } from '../../shared/types/api.types';
 import { clearTokens } from '../../infrastructure/services/tokenStorage';
+import { ApiErrorResponse, AuthResponse } from '../types/api.response.types';
 
 interface ExtendedRequestConfig extends InternalAxiosRequestConfig {
     _retry?: boolean;

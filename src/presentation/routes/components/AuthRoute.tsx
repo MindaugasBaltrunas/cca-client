@@ -4,9 +4,10 @@ import Preloader from "../../components/Preloader/preloader";
 import { useAuthState } from "../../../core/auth/hooks/useAuthState";
 import { getAuthRedirect } from "../utils/getAuthRedirect";
 import { RouteGuard } from "./RouteGuard";
-import { AuthRouteProps, AuthState } from "../../../core/auth/types/auth.types";
 import { ALLOWED_ROUTES } from "../constants/constants";
 import { logger } from "../../../shared/utils/logger";
+import { AuthRouteProps } from "../../../core/auth/types/auth.context.types";
+import { AuthState } from "../../../shared/types/auth.base.types";
 
 export const AuthRoute: React.FC<AuthRouteProps> = ({
   fallbackPath = ALLOWED_ROUTES.LOGIN,

@@ -1,4 +1,4 @@
-import { RouteCategory } from "../../../core/auth/types/auth.types";
+import { RouteCategory } from "../../../core/auth/types/auth.context.types";
 import { ALLOWED_ROUTES, ROUTE_CATEGORIES } from "../constants/constants";
 
 const normalize = (path: string): string => path.replace(/\/+$/, "") || "/";

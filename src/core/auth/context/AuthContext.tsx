@@ -1,5 +1,6 @@
 import React, { createContext, useContext, ReactNode } from "react";
-import { AuthContextType, useAuthentication } from "../hooks/index";
+import {  useAuthentication } from "../hooks/index";
+import { AuthContextType } from "../types/auth.context.types";
 
 const AuthContext = createContext<AuthContextType | null>(null);
 

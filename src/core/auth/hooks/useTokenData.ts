@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useQueryClient } from '@tanstack/react-query';
 import { getAccessToken, getId } from "../../../infrastructure/services/tokenStorage";
-import type { TokenData } from "../types/auth.types";
+import { TokenData } from "../types/auth.context.types";
 
 export const useTokenData = () => {
   const queryClient = useQueryClient();

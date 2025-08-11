@@ -1,4 +1,4 @@
-import { AuthState } from "../../types/auth.types";
+import { AuthState } from "../../../../shared/types/auth.base.types";
 
 export const mapAuthState = (status?: string): AuthState => {
     switch (status?.toUpperCase()) {
