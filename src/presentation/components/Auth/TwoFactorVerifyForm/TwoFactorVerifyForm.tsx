@@ -7,7 +7,6 @@ import { validationSchema, initialValues } from "./formSchema";
 import { TwoFactorFormContent } from "./TwoFactorFormContent";
 import { FormValues } from "./types";
 import styles from "./styles.module.scss";
-import { useAuthState } from "../../../../core/auth/hooks/useAuthState";
 
 interface TwoFactorVerifyFormProps {
   onSuccess?: () => void;

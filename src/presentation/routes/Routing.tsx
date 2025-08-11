@@ -10,8 +10,7 @@ import {
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ALLOWED_ROUTES } from "./constants/constants";
 
-// 📦 Lazy loaded pages
-const LoginPage = React.lazy(() => import("../pages/loginPage/LoginPage"));
+const LoginPage = React.lazy(() => import("../pages/login/loginPage"));
 const TwoFactorSetupPage = React.lazy(
   () => import("../components/Auth/TwoFactorAuthSetup/TwoFactorAuthSetup")
 );

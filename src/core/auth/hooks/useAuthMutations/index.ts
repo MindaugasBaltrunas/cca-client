@@ -24,7 +24,6 @@ export const useAuthMutations = ({
 
   const processAuthResponse = createProcessAuthResponse(queryClient, handlersInternal);
 
-  // Mutations
   const loginMutation = useMutation<AuthResponse, Error, LoginData>({
     mutationFn: async (credentials) => {
       const result = await authApi.login(credentials);

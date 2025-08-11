@@ -29,14 +29,11 @@ export const AuthRoute: React.FC<AuthRouteProps> = ({
     return <Preloader isLoading />;
   }
 
-  // Fixed logic: Handle BASIC_AUTH properly
   const mappedAuthState: AuthState = (() => {
-    // If user has BASIC_AUTH, they're logged in but may need 2FA setup
     if (authState === "BASIC_AUTH") {
       return !has2FAEnabled ? "NEEDS_SETUP" : "BASIC_AUTH";
     }
     
-    // Handle other states
     if (authState === "PENDING_VERIFICATION" && has2FAEnabled) {
       return "PENDING_VERIFICATION";
     }
@@ -45,12 +42,10 @@ export const AuthRoute: React.FC<AuthRouteProps> = ({
       return "FULL_AUTH";
     }
     
-    // Handle NEEDS_SETUP case
     if (authState === "NEEDS_SETUP") {
       return "NEEDS_SETUP";
     }
     
-    // Default to NO_AUTH
     return "NO_AUTH";
   })();
 

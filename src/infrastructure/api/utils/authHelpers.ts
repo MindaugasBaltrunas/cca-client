@@ -45,18 +45,4 @@ export const handleSuccessfulAuth = async (response: AuthResponse): Promise<void
   }
 };
 
-export const debugTokenData = async () => {
-  const { getAllTokens, getId, isTokenExpired } = await import('../../services/tokenStorage');
-  const tokens = await getAllTokens();
-  const userId = await getId();
-  const isExpired = await isTokenExpired();
 
-  console.log('🔍 Current token state:', {
-    hasAccessToken: !!tokens.accessToken,
-    hasRefreshToken: !!tokens.refreshToken,
-    hasUserId: !!userId,
-    expiry: tokens.expiry ? new Date(tokens.expiry).toISOString() : null,
-    isExpired,
-    timeLeft: tokens.expiry ? Math.max(0, Math.floor((tokens.expiry - Date.now()) / 1000)) : 0
-  });
-};

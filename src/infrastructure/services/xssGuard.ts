@@ -69,7 +69,7 @@ export const escapeHTML = (text: string): string => {
 
 export const sanitizeUrl = (url: string): string => {
   if (!url) return '#';
-  
+   // eslint-disable-next-line
   const urlPattern = /^(?:(?:https?|mailto):\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/;
   
   if (urlPattern.test(url)) {

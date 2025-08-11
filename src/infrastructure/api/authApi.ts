@@ -68,7 +68,6 @@ export const adminLogin = async (
   credentials: LoginData & { adminPassword: string }
 ): Promise<AuthResponse | ApiErrorResponse> => {
   try {
-    logger.debug('Attempting admin login');
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.ADMIN_SIGN_IN, credentials);
     await handleSuccessfulAuth(response.data);
     if (response.data.status === 'success') {
@@ -82,7 +81,6 @@ export const adminLogin = async (
 
 export const register = async (userData: SignUpData): Promise<AuthResponse | ApiErrorResponse> => {
   try {
-    logger.debug('Attempting user registration');
     const safeUserData = sanitizeObject(userData);
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.SIGN_UP, safeUserData);
     await handleSuccessfulAuth(response.data);
@@ -98,7 +96,6 @@ export const register = async (userData: SignUpData): Promise<AuthResponse | Api
 
 export const logout = async (userId: string): Promise<AuthResponse | ApiErrorResponse> => {
   try {
-    logger.debug('Attempting user logout');
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.SIGN_OUT, sanitizeObject({ userId }));
     clearTokens();
     EventBus.emit('auth:logout');
@@ -144,7 +141,6 @@ export const disable2FA = (token: string): Promise<AuthResponse | ApiErrorRespon
 
 export const verify2FA = async (userId: string, token: string): Promise<TwoFactorSetupResponse> => {
   try {
-    logger.debug('Verifying 2FA token');
     const safePayload = sanitizeObject({ userId, token });
     const response = await http.post(API_CONFIG.ENDPOINTS.AUTH.TWO_FACTOR.VERIFY, safePayload);
 

@@ -75,7 +75,6 @@ const createTokenRefreshService = () => {
     return (response as AuthResponse).success !== undefined;
   }
 
-
   return {
     subscribeToTokenRefresh,
     onTokenRefreshed,
