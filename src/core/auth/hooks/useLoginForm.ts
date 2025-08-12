@@ -1,8 +1,10 @@
 import { FormikHelpers } from 'formik';
+import { sanitizeFields } from 'xss-safe-display';
 import { LoginData } from '../../../shared/types/auth.base.types';
 import { useAuth } from '../context/AuthContext';
 import { logger } from '../../../shared/utils/logger';
 import { initialValues, validationSchema } from '../../../presentation/validation/loginValidation';
+
 
 export default function useLoginForm() {
   const { signIn, isLoading } = useAuth();
@@ -12,7 +14,8 @@ export default function useLoginForm() {
     { setSubmitting }: FormikHelpers<LoginData>
   ) => {
     try {
-      await signIn(values);
+      const sanitized = sanitizeFields(values);
+      await signIn(sanitized);
     } catch (error) {
       logger.error('Login failed:', error);
     } finally {

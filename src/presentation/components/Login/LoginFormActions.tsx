@@ -1,7 +1,7 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import styles from "../../styles/auth.module.scss";
-import { safeDisplay } from "../../../infrastructure/services";
+import { safeDisplay } from "xss-safe-display";
 
 export const LoginFormActions: React.FC = () => {
   return (

@@ -3,9 +3,12 @@ import { ApiErrorResponse, AuthResponse, TwoFactorSetupResponse } from '../../sh
 import { LoginData, SignUpData } from '../../shared/types/auth.base.types';
 import { EventBus } from '../../shared/utils/eventBus';
 import { logger } from '../../shared/utils/logger';
-import { sanitizeObject, sanitizeString } from '../services';
 import { clearTokens, saveTokens } from '../services/tokenStorage';
 import { determineExpiresIn } from './utils/authHelpers';
+import {
+  sanitizeString,
+  sanitizeObject,
+} from 'xss-safe-display';
 
 const handleSuccessfulAuth = async (response: AuthResponse): Promise<void> => {
   if (response.success && response.data) {

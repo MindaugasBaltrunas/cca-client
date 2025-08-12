@@ -1,6 +1,6 @@
 import React, { CSSProperties } from 'react';
 import { ButtonError } from '../../../shared/utils/errorHandling';
-import { safeDisplay } from '../../../infrastructure/services';
+import { safeDisplay } from "xss-safe-display";
 
 interface ButtonWithIconProps {
   icon: string;

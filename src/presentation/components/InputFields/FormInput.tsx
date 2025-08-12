@@ -1,6 +1,6 @@
 import React from "react";
 import { useFormikContext } from "formik";
-import { safeDisplay } from "../../../infrastructure/services";
+import { safeDisplay } from "xss-safe-display";
 
 interface FormInputProps {
   name: string;

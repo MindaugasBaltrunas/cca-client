@@ -1,4 +1,5 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { safeDisplay } from "xss-safe-display";
 import { useTwoFactorSetup } from "./hooks/useTwoFactorSetup";
 import ErrorMessage from "./components/ErrorMessage";
 import Preloader from "../../Preloader/preloader";
@@ -6,7 +7,6 @@ import SetupInstructions from "./components/SetupInstructions";
 import QrCodeDisplay from "./components/QrCodeDisplay";
 import VerificationForm from "./components/VerificationForm";
 import styles from "./TwoFactorAuthSetup.module.scss";
-import { safeDisplay } from "../../../../infrastructure/services";
 import { logger } from "../../../../shared/utils/logger";
 
 const TwoFactorAuthSetup: React.FC = () => {

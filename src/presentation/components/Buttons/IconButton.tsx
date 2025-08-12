@@ -1,4 +1,4 @@
-import { safeDisplay } from "../../../infrastructure/services";
+import { safeDisplay } from "xss-safe-display";
 
 interface IconButtonProps {
   onClick: () => void;

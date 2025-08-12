@@ -1,5 +1,5 @@
 import axios, { AxiosInstance, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { sanitizeObject } from '../../infrastructure/services/xssGuard';
+import { sanitizeObject } from 'xss-safe-display';
 import { logger } from '../utils/logger';
 import { clearTokens, getAccessToken, getRefreshToken, setAccessToken } from '../../infrastructure/services/tokenStorage';
 

@@ -1,6 +1,6 @@
 import { AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
 import { API_CONFIG } from '../config/apiConfig';
-import { sanitizeRequestData } from '../../infrastructure/services/sanitizationService';
+import { sanitizeRequestData } from 'xss-safe-display';
 import { logger } from '../utils/logger';
 import { getAccessToken } from '../../infrastructure/services/tokenStorage';
 

@@ -1,6 +1,6 @@
 import React from "react";
 import styles from "./QrCodeDisplay.module.scss";
-import { safeDisplay } from "../../../../../infrastructure/services";
+import { safeDisplay } from "xss-safe-display";
 
 interface QrCodeDisplayProps {
   qrCodeUrl: string;
