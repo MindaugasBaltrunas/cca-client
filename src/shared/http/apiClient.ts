@@ -6,24 +6,8 @@ import { logger } from '../utils/logger';
 import { tokenRefreshService } from '../../infrastructure/services/tokenRefreshService';
 import { getAccessToken } from '../../infrastructure/services/tokenStorage';
 
-const debugClientConfig = () => {
-  const config = {
-    baseURL: API_CONFIG.BASE_URL,
-    hasApiSecret: !!API_CONFIG.API_SECRET,
-    hasApiKey: !!API_CONFIG.API_KEY,
-    endpoints: API_CONFIG.ENDPOINTS,
-    environment: {
-      REACT_APP_API_BASE_URL: process.env.REACT_APP_API_BASE_URL,
-      REACT_APP_API_SECRET: process.env.REACT_APP_API_SECRET ? '[SET]' : '[NOT SET]',
-      REACT_APP_API_KEY: process.env.REACT_APP_API_KEY ? '[SET]' : '[NOT SET]',
-    }
-  };
-  
-  return config;
-};
 
 export const createHttpClient = (): AxiosInstance => {
-  debugClientConfig();
   
   const baseURL = API_CONFIG.BASE_URL || '/';
     
@@ -92,7 +76,6 @@ export const get = <T = any>(
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
   try {
-    logger.debug(`GET request to: ${url}`, { params });
     return axiosInstance.get<T, AxiosResponse<T>>(url, { ...config, params });
   } catch (error) {
     logger.error(`GET ${url} failed:`, error);
@@ -119,7 +102,6 @@ export const put = <T = any>(
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
   try {
-    logger.debug(`PUT request to: ${url}`, { hasData: !!data });
     return axiosInstance.put<T, AxiosResponse<T>>(url, data, config);
   } catch (error) {
     logger.error(`PUT ${url} failed:`, error);
@@ -133,7 +115,6 @@ export const patch = <T = any>(
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
   try {
-    logger.debug(`PATCH request to: ${url}`, { hasData: !!data });
     return axiosInstance.patch<T, AxiosResponse<T>>(url, data, config);
   } catch (error) {
     logger.error(`PATCH ${url} failed:`, error);
@@ -147,7 +128,6 @@ export const del = <T = any>(
   config?: AxiosRequestConfig
 ): Promise<AxiosResponse<T>> => {
   try {
-    logger.debug(`DELETE request to: ${url}`, { params });
     return axiosInstance.delete<T, AxiosResponse<T>>(url, { ...config, params });
   } catch (error) {
     logger.error(`DELETE ${url} failed:`, error);
@@ -155,7 +135,6 @@ export const del = <T = any>(
   }
 };
 
-// Legacy functions for backward compatibility (if needed)
 export const getWithInstance = <T = any>(
   instance: AxiosInstance,
   url: string, 
@@ -184,9 +163,5 @@ export const postWithInstance = <T = any>(
   }
 };
 
-// Export the instance for direct use if needed
 export { axiosInstance };
 export default axiosInstance;
-
-// Debug function export
-export const debugHttpClient = debugClientConfig;

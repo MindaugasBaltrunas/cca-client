@@ -4,8 +4,8 @@
   "private": true,
   "dependencies": {
     "@reduxjs/toolkit": "^2.8.2",
-    "@tanstack/react-query": "^5.84.2",
-    "@tanstack/react-query-devtools": "^5.84.2",
+    "@tanstack/react-query": "^5.85.0",
+    "@tanstack/react-query-devtools": "^5.85.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
@@ -28,7 +28,7 @@
     "resolve-url-loader": "^5.0.0",
     "typescript": "^5.9.2",
     "web-vitals": "^5.1.0",
-    "xss-safe-display": "^0.0.3",
+    "xss-safe-display": "^0.0.5",
     "yup": "^1.7.0"
   },
   "scripts": {

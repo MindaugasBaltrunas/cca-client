@@ -1,6 +1,5 @@
 import { AxiosHeaders, InternalAxiosRequestConfig } from 'axios';
 import { API_CONFIG } from '../config/apiConfig';
-import { sanitizeRequestData } from 'xss-safe-display';
 import { logger } from '../utils/logger';
 import { getAccessToken } from '../../infrastructure/services/tokenStorage';
 
@@ -91,7 +90,7 @@ export const sanitizeRequest = (config: InternalAxiosRequestConfig): InternalAxi
     if (config.data && typeof config.data === 'object') {
         return {
             ...config,
-            data: sanitizeRequestData(config.data)
+            data: config.data
         };
     }
     
