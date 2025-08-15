@@ -11,6 +11,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { ALLOWED_ROUTES } from "./constants/constants";
 
 const LoginPage = React.lazy(() => import("../pages/login/loginPage"));
+const SignupPage = React.lazy(() => import("../pages/signup/signupPage"));
 const TwoFactorSetupPage = React.lazy(
   () => import("../components/Auth/TwoFactorAuthSetup/TwoFactorAuthSetup")
 );
@@ -37,7 +38,7 @@ export const Routing: React.FC = () => {
           {/* Public routes - Login/Signup when not authenticated */}
           <Route element={<PublicRoute />}>
             <Route path={ALLOWED_ROUTES.LOGIN} element={<LoginPage />} />
-            {/* <Route path={ALLOWED_ROUTES.SIGNUP} element={<SignupPage />} /> */}
+            <Route path={ALLOWED_ROUTES.SIGNUP} element={<SignupPage />} />
           </Route>
 
           {/* 2FA routes - Setup/Verify when authenticated but not fully authorized */}

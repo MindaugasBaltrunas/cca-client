@@ -28,7 +28,7 @@
     "resolve-url-loader": "^5.0.0",
     "typescript": "^5.9.2",
     "web-vitals": "^5.1.0",
-    "xss-safe-display": "^0.0.5",
+    "xss-safe-display": "^0.0.9",
     "yup": "^1.7.0"
   },
   "scripts": {
