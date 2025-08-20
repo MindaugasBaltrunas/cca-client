@@ -1,4 +1,5 @@
-import http, { API_CONFIG } from '../../shared/http';
+import { API_CONFIG } from '../../shared/config/apiConfig';
+import http from '../../shared/http';
 import { ApiErrorResponse, AuthResponse, TwoFactorSetupResponse } from '../../shared/types/api.response.types';
 import { LoginData, SignUpData } from '../../shared/types/auth.base.types';
 import { EventBus } from '../../shared/utils/eventBus';

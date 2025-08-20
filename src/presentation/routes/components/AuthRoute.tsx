@@ -5,9 +5,9 @@ import { useAuthState } from "../../../core/auth/hooks/useAuthState";
 import { getAuthRedirect } from "../utils/getAuthRedirect";
 import { RouteGuard } from "./RouteGuard";
 import { ALLOWED_ROUTES } from "../constants/constants";
-import { logger } from "../../../shared/utils/logger";
 import { AuthRouteProps } from "../../../core/auth/types/auth.context.types";
 import { AuthState } from "../../../shared/types/auth.base.types";
+import { logger } from "../../../shared/utils/logger";
 
 export const AuthRoute: React.FC<AuthRouteProps> = ({
   fallbackPath = ALLOWED_ROUTES.LOGIN,
@@ -17,14 +17,6 @@ export const AuthRoute: React.FC<AuthRouteProps> = ({
   const { isAuthenticated, tokenLoading, authState, has2FAEnabled } =
     useAuthState();
 
-  logger.debug(
-    "AuthRoute",
-    isAuthenticated,
-    tokenLoading,
-    authState,
-    has2FAEnabled
-  );
-
   if (tokenLoading) {
     return <Preloader isLoading />;
   }
@@ -33,23 +25,21 @@ export const AuthRoute: React.FC<AuthRouteProps> = ({
     if (authState === "BASIC_AUTH") {
       return !has2FAEnabled ? "NEEDS_SETUP" : "BASIC_AUTH";
     }
-    
+
     if (authState === "PENDING_VERIFICATION" && has2FAEnabled) {
       return "PENDING_VERIFICATION";
     }
-    
+
     if (authState === "FULL_AUTH") {
       return "FULL_AUTH";
     }
-    
+
     if (authState === "NEEDS_SETUP") {
       return "NEEDS_SETUP";
     }
-    
+
     return "NO_AUTH";
   })();
-
-  logger.debug("mappedAuthState", mappedAuthState);
 
   const redirect = getAuthRedirect(
     mappedAuthState,
@@ -58,6 +48,19 @@ export const AuthRoute: React.FC<AuthRouteProps> = ({
     has2FAEnabled,
     isAuthenticated
   );
+
+  // logger.debug(
+  //   "mappedAuthState",
+  //   mappedAuthState,
+  //   "location.pathname",
+  //   location.pathname,
+  //   "location",
+  //   location,
+  //   "has2FAEnabled",
+  //   has2FAEnabled,
+  //   "isAuthenticated",
+  //   isAuthenticated
+  // );
 
   if (redirect) {
     return redirect;

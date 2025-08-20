@@ -7,7 +7,7 @@ import { AuthUser } from "../../../shared/types/auth.base.types";
 export const useAuthState = (): AuthStateHook => {
   const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
   const { data: tokenData, isLoading: tokenLoading } = useTokenData();
-  
+
   const authState = mapAuthState(tokenData?.status);
 
   return {

@@ -10,7 +10,6 @@ import axiosInstance, {
 } from './apiClient';
 
 export const apiClient = axiosInstance;
-export { API_CONFIG } from '../config/apiConfig';
 
 // HTTP utilities (naudojama authApi)
 export const http = {
