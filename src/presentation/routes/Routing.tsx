@@ -12,20 +12,20 @@ import { ALLOWED_ROUTES } from "./constants/constants";
 
 const LoginPage = React.lazy(() => import("../pages/login/loginPage"));
 const SignupPage = React.lazy(() => import("../pages/signup/signupPage"));
-
 const ProfilePage = React.lazy(() => import("../pages/profile/profilePage"));
 const TwoFactorSetupPage = React.lazy(
   () => import("../components/Auth/TwoFactorAuthSetup/TwoFactorAuthSetup")
 );
-
 const TwoFactorVerifyPage = React.lazy(
   () => import("../components/Auth/TwoFactorVerifyForm/TwoFactorVerifyForm")
 );
 const DashboardPage = React.lazy(() => import("../pages/dashboard/dashboard"));
+const PostsList = React.lazy(() => import("../pages/post/postPage"));
+// const PostDetail = React.lazy(() => import("../pages/post/postDetailPage")); // Add this if you have it
 
 export const Routing: React.FC = () => {
   const { isLoading } = useAuth();
-
+  
   if (isLoading) {
     return <Preloader isLoading />;
   }
@@ -34,19 +34,21 @@ export const Routing: React.FC = () => {
     <ErrorBoundary>
       <Suspense fallback={<Preloader isLoading />}>
         <Routes>
-          {/* Root redirect 
+          {/* Root redirect */}
           <Route
             path="/"
-            element={<Navigate to={ALLOWED_ROUTES.DASHBOARD} replace />}
-          />*/}
+            element={<Navigate to={ALLOWED_ROUTES.GET_ALL_POSTS} replace />}
+          />
 
-          {/* Public routes - Login/Signup when not authenticated */}
+          {/* Public routes - accessible without authentication */}
           <Route element={<PublicRoute />}>
             <Route path={ALLOWED_ROUTES.LOGIN} element={<LoginPage />} />
             <Route path={ALLOWED_ROUTES.SIGNUP} element={<SignupPage />} />
+            <Route path={ALLOWED_ROUTES.GET_ALL_POSTS} element={<PostsList />} />
+            {/* <Route path={ALLOWED_ROUTES.GET_BY_ID} element={<PostDetail />} /> */}
           </Route>
 
-          {/* 2FA routes - Setup/Verify when authenticated but not fully authorized */}
+          {/* 2FA routes - for authenticated users needing 2FA setup/verification */}
           <Route element={<TwoFactorRoute />}>
             <Route
               path={ALLOWED_ROUTES.TWO_FA_SETUP}
@@ -58,21 +60,19 @@ export const Routing: React.FC = () => {
             />
           </Route>
 
-          {/* Protected routes - All app routes when fully authorized */}
+          {/* Protected routes - for fully authenticated users */}
           <Route element={<ProtectedRoute />}>
             <Route
               path={ALLOWED_ROUTES.DASHBOARD}
               element={<DashboardPage />}
             />
             <Route path={ALLOWED_ROUTES.PROFILE} element={<ProfilePage />} />
-            {/* <Route path={ALLOWED_ROUTES.SETTINGS} element={<SettingsPage />} />
-            <Route path={ALLOWED_ROUTES.REPORTS} element={<ReportsPage />} /> */}
           </Route>
 
-          {/* Catch all unauthorized routes */}
+          {/* Catch all - redirect to posts (public) */}
           <Route
             path="*"
-            element={<Navigate to={ALLOWED_ROUTES.LOGIN} replace />}
+            element={<Navigate to={ALLOWED_ROUTES.GET_ALL_POSTS} replace />}
           />
         </Routes>
       </Suspense>

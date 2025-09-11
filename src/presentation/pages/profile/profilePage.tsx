@@ -3,7 +3,7 @@ import { logger } from "../../../shared/utils/logger";
 
 const ProfilePage: React.FC = () => {
   const { tokenData } = useAuthState();
-  logger.debug("tokenData", tokenData);
+  // logger.debug("tokenData", tokenData);
   return (
     <div>
       <h1>My Profile</h1>

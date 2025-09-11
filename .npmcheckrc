@@ -1,0 +1,9 @@
+{
+  "depcheck": {
+    "ignoreMatches": [
+      "sass",
+      "@types/jest", 
+      "@types/node"
+    ]
+  }
+}

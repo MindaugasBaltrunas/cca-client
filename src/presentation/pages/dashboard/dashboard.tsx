@@ -1,39 +1,21 @@
+// Dashboard.tsx
 import { NavLink } from "react-router-dom";
-import { safeDisplay } from "xss-safe-display";
+import { ALLOWED_ROUTES } from "../../routes/constants/constants";
 
 const Dashboard = () => {
   return (
     <div>
-      <h1>Dashboard Dashboard</h1>
-      <div >
-        <NavLink to={safeDisplay.url("/profile")}>Forgot Password?</NavLink>
+      <h1>Dashboard</h1>
+
+      <div>
+        <NavLink to={ALLOWED_ROUTES.GET_ALL_POSTS}>View Posts</NavLink>
       </div>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, corrupti
-        incidunt in impedit commodi voluptate! Exercitationem quidem aperiam
-        minus magnam fugit mollitia eum aliquam, doloremque accusantium magni
-        fuga, culpa nostrum.
-      </p>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, corrupti
-        incidunt in impedit commodi voluptate! Exercitationem quidem aperiam
-        minus magnam fugit mollitia eum aliquam, doloremque accusantium magni
-        fuga, culpa nostrum.
-      </p>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, corrupti
-        incidunt in impedit commodi voluptate! Exercitationem quidem aperiam
-        minus magnam fugit mollitia eum aliquam, doloremque accusantium magni
-        fuga, culpa nostrum.
-      </p>
-      <p>
-        Lorem ipsum dolor sit amet consectetur adipisicing elit. Quia, corrupti
-        incidunt in impedit commodi voluptate! Exercitationem quidem aperiam
-        minus magnam fugit mollitia eum aliquam, doloremque accusantium magni
-        fuga, culpa nostrum.
-      </p>
+
+      {/* Probably not "Forgot Password?" to /profile — double-check this */}
+      <div>
+        <NavLink to={ALLOWED_ROUTES.PROFILE}>Profile</NavLink>
+      </div>
     </div>
   );
 };
-
 export default Dashboard;

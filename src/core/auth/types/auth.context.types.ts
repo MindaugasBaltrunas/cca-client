@@ -1,16 +1,4 @@
-import { ROUTE_CATEGORIES } from "../../../presentation/routes/constants/constants";
 import { AuthStatusValue, AuthSuccessPayload, AuthUser, BaseCredentials, SignUpData } from "../../../shared/types/auth.base.types";
-
-export type RouteCategory = keyof typeof ROUTE_CATEGORIES;
-
-export interface AuthRouteProps {
-  fallbackPath?: string;
-  requireFullAuth?: boolean;
-  require2FA?: boolean;
-  allowPublic?: boolean;
-  redirectIfAuthenticated?: string;
-  allowedRoutes?: readonly RouteCategory[] | RouteCategory[];
-}
 
 export interface AuthContext {
   isAuthenticated: boolean;
@@ -67,6 +55,7 @@ export interface AuthStateHook {
   setCurrentUser: (user: AuthUser | null) => void;
   tokenData: any;
   tokenLoading: boolean;
+  error?: Error | null;
   hasToken: boolean;
   has2FAEnabled: boolean;
   isAuthenticated: boolean;

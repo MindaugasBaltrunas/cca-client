@@ -46,7 +46,6 @@ const process2FAOperation = async (
   try {
     const safeToken = sanitizeString(token);
     const response = await http.post(endpoint, { token: safeToken });
-    logger.debug(`2FA operation response:`, response);
     if (response.data.status === 'pending') {
       EventBus.emit(successEvent);
     }

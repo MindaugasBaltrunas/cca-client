@@ -5,7 +5,7 @@ export const extractAuthData = (authResponse: AuthResponse) => ({
   token: authResponse.data?.accessToken,
   userId: authResponse.data?.userId,
   refreshToken: authResponse.data?.refreshToken,
-  enabled: authResponse.data?.auth?.enable,
+  enabled: authResponse.data?.auth?.enabled,
   verified: authResponse.data?.auth?.verified,
   expiresAt: authResponse.data?.expiresAt,
   status: authResponse.data?.auth?.status,
