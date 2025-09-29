@@ -1,27 +1,25 @@
 import React from "react";
 import { AuthRoute } from "./AuthRoute";
-import { ALLOWED_ROUTES } from "../constants/constants";
-import { AuthRouteProps } from "../../../core/auth/types/auth.context.types";
+import { ALLOWED_ROUTES, ROUTE_CATEGORIES } from "../constants/constants";
+import { AuthRouteProps } from "../types";
 
 const routeConfigs: Record<string, AuthRouteProps> = {
-  // Allow login/signup when not authenticated
   public: {
     allowPublic: true,
     redirectIfAuthenticated: ALLOWED_ROUTES.DASHBOARD,
-    allowedRoutes: ["PUBLIC"],
+    allowedRoutes: ROUTE_CATEGORIES.PUBLIC,
   },
   
-  // Allow 2FA setup/verify when authenticated but not fully authorized
   twoFactor: {
     require2FA: true,
-    allowedRoutes: ["TWO_FA"],
+    fallbackPath: ALLOWED_ROUTES.LOGIN,
+    allowedRoutes: ROUTE_CATEGORIES.TWO_FA,
   },
   
-  // Allow all protected routes when fully authorized
   protected: {
     requireFullAuth: true,
     fallbackPath: ALLOWED_ROUTES.LOGIN,
-    allowedRoutes: ["PROTECTED"],
+    allowedRoutes: ROUTE_CATEGORIES.PROTECTED,
   },
 } as const;
 

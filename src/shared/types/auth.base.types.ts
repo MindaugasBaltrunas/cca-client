@@ -38,7 +38,7 @@ export type AuthState = "NO_AUTH" | "NEEDS_SETUP" | "PENDING_VERIFICATION" | "FU
 
 export interface AuthStatus {
   hasAccessToken: boolean;
-  enable: boolean;
+  enabled: boolean;
   verified?: boolean;
   status: AuthStatusValue;
 }

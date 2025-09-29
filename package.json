@@ -3,32 +3,21 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@reduxjs/toolkit": "^2.8.2",
-    "@tanstack/react-query": "^5.85.5",
-    "@tanstack/react-query-devtools": "^5.85.5",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/jest-dom": "^6.7.0",
-    "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^14.6.1",
+    "@tanstack/react-query": "^5.85.4",
+    "@tanstack/react-query-devtools": "^5.85.4",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.10",
     "@types/react-dom": "^19.1.7",
     "axios": "^1.11.0",
-    "eslint": "^8.57.1",
     "formik": "^2.4.6",
     "jwt-decode": "^4.0.0",
-    "postcss-loader": "^8.1.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-error-boundary": "^6.0.0",
-    "react-redux": "^9.2.0",
-    "react-router": "^7.8.1",
     "react-router-dom": "^7.8.1",
     "react-scripts": "5.0.1",
-    "resolve-url-loader": "^5.0.0",
-    "typescript": "^4.9.5",
-    "web-vitals": "^5.1.0",
+    "typescript": "^5.9.2",
     "xss-safe-display": "^0.1.0",
     "yup": "^1.7.0"
   },
@@ -56,15 +45,13 @@
       "last 1 safari version"
     ]
   },
-  "devDependencies": {
-    "css-loader": "^7.1.2",
-    "sass": "^1.90.0",
-    "sass-loader": "^16.0.5",
-    "style-loader": "^4.0.0"
-  },
   "pnpm": {
     "overrides": {
       "sass-loader": "^16.0.5"
     }
+  },
+  "devDependencies": {
+    "eslint": "^8.57.1",
+    "eslint-config-react-app": "^7.0.1"
   }
 }

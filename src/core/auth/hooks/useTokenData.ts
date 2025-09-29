@@ -8,12 +8,11 @@ export const useTokenData = () => {
 
   const fetchTokenData = async (): Promise<TokenData> => {
     try {
-      const [accessToken, userId] = await Promise.all([
+      const [accessToken, userId, currentData] = await Promise.all([
         getAccessToken(),
-        getId()
-      ]);
+        getId(),
+        queryClient.getQueryData<TokenData>(['auth-tokens'])]);
 
-      const currentData = queryClient.getQueryData<TokenData>(['auth-tokens']);
       const hasAccessToken = Boolean(accessToken);
       const hasUserId = Boolean(userId);
       const enabled = currentData?.enabled ?? false;

@@ -112,7 +112,7 @@ export const useAuthMutations = ({
       if (responseData) {
         queryClient.setQueryData(['auth-tokens'], (prev: any) => ({
           ...(prev ?? {}),
-          enabled: responseData.enable ?? true,
+          enabled: responseData.enabled ?? true,
           status: responseData.status,
         }));
       }

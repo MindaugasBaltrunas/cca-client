@@ -1,8 +1,8 @@
 import React from "react";
 import { Navigate, type Location } from "react-router-dom";
-import { isAllowedRoute, getRouteCategory } from "./routeValidator";
 import { ALLOWED_ROUTES } from "../constants/constants";
 import { AuthState } from "../../../shared/types/auth.base.types";
+import { getRouteCategory, isAllowedRoute } from "./routeValidator";
 
 const normalize = (path: string): string => path.replace(/\/+$/, "") || "/";
 
