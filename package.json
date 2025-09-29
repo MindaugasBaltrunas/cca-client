@@ -1,10 +1,11 @@
 {
   "name": "cca-client",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "private": true,
   "dependencies": {
     "@tanstack/react-query": "^5.85.4",
     "@tanstack/react-query-devtools": "^5.85.4",
+<<<<<<< HEAD
     "@types/jest": "^30.0.0",
     "@types/node": "^24.3.0",
     "@types/react": "^19.1.10",
@@ -18,10 +19,22 @@
     "react-router-dom": "^7.8.1",
     "react-scripts": "5.0.1",
     "typescript": "^5.9.2",
+=======
+    "axios": "^1.11.0",
+    "formik": "^2.4.6",
+    "jwt-decode": "^4.0.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-error-boundary": "^6.0.0",
+    "react-router-dom": "^6.30.1",
+    "react-scripts": "5.0.1",
+>>>>>>> a67e14ca31fa5e30d8a27de84571782c518fa0a4
     "xss-safe-display": "^0.1.0",
     "yup": "^1.7.0"
   },
   "scripts": {
+    "debug": "node --inspect-brk=9229 node_modules/.bin/react-scripts start",
+    "start:debug": "react-scripts --inspect start",
     "start": " react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -51,7 +64,18 @@
     }
   },
   "devDependencies": {
+<<<<<<< HEAD
     "eslint": "^8.57.1",
     "eslint-config-react-app": "^7.0.1"
+=======
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.3.1",
+    "@types/react": "^18.3.24",
+    "@types/react-dom": "^18.3.7",
+    "eslint": "^8.57.1",
+    "eslint-config-react-app": "^7.0.1",
+    "sass": "^1.92.1",
+    "typescript": "^4.9.5"
+>>>>>>> a67e14ca31fa5e30d8a27de84571782c518fa0a4
   }
 }
