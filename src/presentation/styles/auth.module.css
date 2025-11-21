@@ -1,0 +1,365 @@
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.addButton {
+  display: flex;
+  margin: 10px;
+}
+.addButton button {
+  background-color: #3498db;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 5px;
+  border: none;
+  transition: background-color 0.3s ease;
+  width: 30px;
+}
+.addButton button:hover {
+  background-color: #2980b9;
+}
+
+.saveButton {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.saveButton button {
+  background: linear-gradient(45deg, #6DD5FA, #FF758C);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  outline: none;
+  transform: scale(1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.saveButton button:hover {
+  background: linear-gradient(45deg, #FF758C, #6DD5FA);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+}
+
+.saveButton button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  display: flex;
+  margin: 10px;
+}
+.cancelButton button {
+  padding: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 5px;
+  border: none;
+  transition: background-color 0.3s ease;
+}
+.cancelButton button:hover {
+  background-color: rgba(245, 201, 193, 0.8);
+}
+
+.removeButton {
+  margin: 10px;
+}
+.removeButton button {
+  background-color: #d9534f;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 5px;
+  border: none;
+  transition: background-color 0.3s ease;
+  width: 30px;
+}
+.removeButton button:hover {
+  background-color: rgba(141, 51, 15, 0.8);
+}
+
+.buttonEdit {
+  justify-content: center;
+}
+.buttonEdit button {
+  margin: 0 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  background-color: text;
+}
+.buttonEdit button img {
+  width: 30px;
+  height: 30px;
+  margin: 0 0 0 10px;
+}
+.buttonEdit button img:hover {
+  border-radius: 5px;
+  background-color: #ddd;
+}
+
+.closeModalButton {
+  position: absolute;
+  top: 5%;
+  left: 95%;
+  transform: translate(-50%, -50%);
+}
+.closeModalButton button {
+  cursor: pointer;
+  background-color: white;
+  border: none;
+  width: 30px;
+}
+.closeModalButton button:hover {
+  background-color: white;
+  font-size: 16px;
+}
+
+.buttonAdd {
+  display: flex;
+  margin: 0 10px 0 0;
+}
+.buttonAdd button {
+  background-color: #3498db;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 5px;
+  border: none;
+  transition: background-color 0.3s ease;
+  width: 30px;
+}
+.buttonAdd button:hover {
+  background-color: #2980b9;
+}
+
+.buttonRemove {
+  margin-top: 20px;
+}
+.buttonRemove button {
+  background-color: #d9534f;
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: 5px;
+  border: none;
+  transition: background-color 0.3s ease;
+  width: 30px;
+}
+.buttonRemove button:hover {
+  background-color: rgba(141, 51, 15, 0.8);
+}
+
+.buttonPublic {
+  text-align: center;
+  margin-top: 20px;
+}
+.buttonPublic button {
+  background-image: linear-gradient(to right, #6dd5ed, #2193b0);
+  border: none;
+  border-radius: 5px;
+  color: white;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 10px 20px;
+  text-transform: uppercase;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+.buttonPublic button::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 300%;
+  height: 300%;
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+  transform: translate(-50%, -50%) scale(0);
+  transition: transform 0.3s ease;
+}
+.buttonPublic button:hover::before {
+  transform: translate(-50%, -50%) scale(1);
+}
+.buttonPublic button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.buttonPublic button:disabled {
+  background-image: linear-gradient(to right, #cccccc, #999999);
+  cursor: default;
+}
+
+.removeDefaultButton button {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  cursor: pointer;
+  outline: inherit;
+}
+
+.titleField {
+  line-height: 32px;
+  border-radius: 10px;
+  text-align: center;
+  margin: 10px 0 0 0;
+  transition: transform 1s ease 0s;
+  border-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.024) 0px 0px 0px 1px, rgba(0, 0, 0, 0.05) 0px 1px 0px 0px, rgba(0, 0, 0, 0.03) 0px 0px 8px 0px, rgba(0, 0, 0, 0.1) 0px 20px 30px 0px;
+}
+
+.inputField {
+  line-height: 32px;
+  border-radius: 10px;
+  text-align: center;
+  width: 100%;
+}
+
+.invalid {
+  display: none;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  margin: 5px;
+  animation: fadeIn 0.5s ease-in-out;
+  font-family: "Arial", sans-serif;
+}
+.checkbox input[type=checkbox] {
+  margin-right: 10px;
+  cursor: pointer;
+  accent-color: #007bff;
+  width: 20px;
+  height: 20px;
+}
+.checkbox label {
+  cursor: pointer;
+  transition: color 0.3s ease;
+  font-size: 16px;
+  color: #333;
+}
+.checkbox label:hover {
+  color: #0056b3;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.container {
+  height: 100vh;
+  width: 100%;
+  background-color: #354152;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.container .auth {
+  max-width: 25rem;
+  width: 100%;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #7e8ba3;
+  box-shadow: 0 0 250px #000;
+  text-align: center;
+  padding: 2rem;
+}
+.container .auth h1 {
+  font-size: 2.75rem;
+  font-weight: 100;
+  margin: 0 0 1rem;
+  text-transform: uppercase;
+  color: #fff;
+}
+.container .auth form {
+  width: 100%;
+  margin: 10px 0;
+}
+.container .auth form input {
+  color: #fff;
+  line-height: 2rem;
+  border-radius: 999px;
+  background-color: transparent;
+  border: 1px solid #242c37;
+  text-align: center;
+  width: 100%;
+  padding: 8px 0;
+  margin: 10px 0;
+}
+.container .auth form input:-webkit-autofill {
+  -webkit-transition: background-color 5000s;
+  transition: background-color 5000s;
+  -webkit-text-fill-color: #fff;
+}
+.container .auth form button {
+  background-image: linear-gradient(160deg, #1c2430 0%, #354152 100%);
+  color: #7e8ba3;
+  width: 100%;
+  border-radius: 999px;
+  line-height: 2rem;
+  margin: 15px 0;
+  border: 1px solid #242c37;
+  cursor: pointer;
+  padding: 0 10px;
+}
+.container .auth form button:hover {
+  background-image: linear-gradient(160deg, #354152 0%, #1c2430 100%);
+  color: #fff;
+}
+.container .auth .links {
+  margin: 15px 0;
+  color: #7e8ba3;
+}
+.container .auth .links a {
+  margin-left: 10px;
+  color: #7e8ba3;
+  text-decoration: none;
+}
+.container .auth .links a:hover {
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 20px;
+  }
+  .container .auth {
+    width: 100%;
+  }
+}/*# sourceMappingURL=auth.module.css.map */

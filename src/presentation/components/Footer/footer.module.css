@@ -1,0 +1,10 @@
+.footer {
+  height: 10vh;
+  background-color: #1d242d;
+  width: 100%;
+}
+.footer .copy {
+  color: white;
+  float: right;
+  margin: 0 20px 20px 0;
+}/*# sourceMappingURL=footer.module.css.map */
